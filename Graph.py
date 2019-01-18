@@ -24,18 +24,22 @@ class LoLaGraph:
 
         combinations = [list(ding) for ding in combinations]
 
+
+
         combinations = [all_combinations(ding) for ding in combinations]
 
+        visited = set()
         newGraphs = []
         for chain in combinations:
             for combination in chain:
-                newGraph = self.connect(otherGraph, combination)
-                if newGraph:
-                    newGraphs.append(newGraph)
+                if(combination not in visited):
+                    visited.add(combination)
+                    newGraph = self.connect(otherGraph, combination)
+                    if newGraph:
+                        newGraphs.append(newGraph)
 
         for newGraph in newGraphs:
-            print(newGraph)
-
+            newGraph.draw()
 
 
     # connect two graphs
@@ -50,7 +54,16 @@ class LoLaGraph:
                 return None
 
         #TODO: connect graphs according to map and return
-        return connectionMap
+
+        newGraph = LoLaGraph(self)
+        newGraph.graph = self.graph.copy()
+
+        for connection in connectionMap:
+            newGraph.updateNode(connection[0], connection[1])
+
+        newGraph.graph = nx.compose(newGraph.graph, otherGraph.graph)
+
+        return newGraph
 
     # return list of new graphs that are possible contractions
     def contract(self):
@@ -80,11 +93,20 @@ class LoLaGraph:
 
     # Update the nodeId to newId
     def updateNode(self, nodeId, newId):
-        adj = list(self.graph.adj[nodeId])
+        # get the node from the graph we wish to update
+        adj = self.graph.adj[nodeId]
+        node = self.getNode(nodeId)
         self.graph.add_node(newId, node=self.getNode(nodeId))
-        for neighborId in adj:
-            self.graph.add_edge(newId, neighborId)
+        # remove the node from the graph
         self.graph.remove_node(nodeId)
+        # restore the edges
+        for neighborId, v in adj.items():
+            parentId = v['parent']
+            if parentId is nodeId:
+                parentId = newId
+            self.graph.add_edge(newId, neighborId, parent=parentId)
+
+
 
     def getParents(self, nodeId):
         adj = self.graph.adj[nodeId]
@@ -111,7 +133,7 @@ class LoLaGraph:
             node = v['node']
             colors.append(node.getColor())
             if type(node) is LoLaVertex:
-                labels[node.nodeId] = node.sequent
+                labels[node.nodeId] = str(node.nodeId) + " " + node.sequent
 
         # draw the graph
         nx.draw(self.graph, show_labels=True, labels=labels, node_color=colors, node_size=1000)
