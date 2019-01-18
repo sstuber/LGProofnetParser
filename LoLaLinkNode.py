@@ -50,6 +50,11 @@ class LoLaLinkNode:
             return self.nodeId == other
         return self.nodeId == other.nodeId
 
+    def getColor(self):
+        if self.type == LinkType.Tensor:
+            return 'xkcd:light green'
+        return 'xkcd:dark pink'
+
 class LoLaVertex:
 
 
@@ -72,7 +77,7 @@ class LoLaVertex:
         return self.nodeId == other.nodeId
 
     def __str__(self):
-        return "%i: %s" % (self.nodeId, self.sequent)
+        return "%i: %s %s" % (self.nodeId, self.sequent, self.getVertexType())
 
     # graph. getadjects of self
     def getLoLaLinkNodes(self):
@@ -99,6 +104,7 @@ class LoLaVertex:
     def unfoldVertex(self):
         print('fold')
 
-
+    def getColor(self):
+        return 'xkcd:sky blue'
 
 

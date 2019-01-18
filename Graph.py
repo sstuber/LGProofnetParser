@@ -1,5 +1,7 @@
 from LoLaLinkNode import *
 import networkx as nx
+import itertools
+import matplotlib.pyplot as plt
 
 class LoLaGraph:
 
@@ -12,8 +14,50 @@ class LoLaGraph:
 
 
     # return list of new graphs that are possible steps
-    def connect(self, graph):
-        print('we folded')
+    def getPossibleConnections(self, otherGraph):
+        leaves = self.getLeaves()
+        otherLeaves = otherGraph.getLeaves()
+
+        # combinations = [zip(leaf, otherLeaves)
+        #                for leaf in itertools.permutations(leaves, len(otherLeaves))]
+
+        combinations = [zip(leaf, otherLeaves)
+                       for leaf in itertools.permutations(leaves, len(otherLeaves))]
+
+        combinations = [all_combinations(list(combination)) for combination in combinations]
+
+
+        # print(combination)
+        # print("###########")
+        # ding = list(all_combinations(combination))
+
+        # for poep in ding:
+        #     print(str(poep) + " " + str(self.connect(otherGraph, poep)))
+
+
+        newGraphs = []
+        for combination in combinations:
+            newGraph = self.connect(otherGraph, combination)
+            if newGraph:
+                newGraphs.append(newGraph)
+
+        print(len(newGraphs))
+
+
+
+    # connect two graphs
+    # return new graph if connectionMap is exactly possible
+    # else return None
+    def connect(self, otherGraph, connectionMap):
+
+        for connection in connectionMap:
+            connection = [item for sublist in connection for item in sublist]
+            v1 = self.getNode(connection[0])
+            v2 = otherGraph.getNode(connection[1])
+            if not v1.canConnect(v2):
+                return None
+
+        return True
 
     # return list of new graphs that are possible contractions
     def contract(self):
@@ -66,4 +110,22 @@ class LoLaGraph:
         return children
 
     def draw(self):
-        print("ik moet hier drawen")
+        # build color list
+        colors = []
+
+        # build label dictionary
+        labels = {}
+
+        for k, v in dict(self.graph.nodes()).items():
+            node = v['node']
+            colors.append(node.getColor())
+            if type(node) is LoLaVertex:
+                labels[node.nodeId] = node.sequent
+
+        nx.draw(self.graph, show_labels=True, labels=labels, node_color=colors, node_size=1000)
+        plt.show()
+
+def all_combinations(any_list):
+    return itertools.chain.from_iterable(
+        itertools.combinations(any_list, i + 1)
+        for i in range(len(any_list)))

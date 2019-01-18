@@ -54,24 +54,22 @@ if __name__ == '__main__':
     g2.graph.add_edge(8, 12, parent=12)
     g2.graph.add_edge(8, 13, parent=8)
 
-    print("g1 leaves:")
-    for leaf in g1.getLeaves():
-        print(leaf)
+    # print("g1 leaves:")
+    # for leaf in g1.getLeaves():
+    #     print(leaf)
+    #
+    # print("g2 leaves:")
+    # for leaf in g2.getLeaves():
+    #     print(leaf)
 
-    print("g2 leaves:")
-    for leaf in g2.getLeaves():
-        print(leaf)
+    g1.getPossibleConnections(g2)
+
+    g1.draw()
 
     # nx.draw(g1.graph, show_labels=True)
     # plt.show()
     # nx.draw(g2.graph, show_labels=True)
     # plt.show()
-
-    n = g1.getNode(2)
-
-    for leaf in g1.getLeaves():
-        for other in g2.getLeaves():
-            print(str(leaf.canConnect(other)) + "    " + str(leaf) + "    "+ str(other))
 
 
     print("end main")
