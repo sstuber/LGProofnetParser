@@ -54,11 +54,11 @@ class LoLaVertex:
 
 
 
-    def __init__(self, nodeId, graph):
+    def __init__(self, nodeId, graph, sequent):
 
         self.nodeId = nodeId
         self.vertexType = None
-        self.sequent = ''
+        self.sequent = sequent
 
         # lola graph
         self.graph = graph
@@ -71,6 +71,8 @@ class LoLaVertex:
             return self.nodeId == other
         return self.nodeId == other.nodeId
 
+    def __str__(self):
+        return "%i: %s" % (self.nodeId, self.sequent)
 
     # graph. getadjects of self
     def getLoLaLinkNodes(self):
@@ -86,6 +88,12 @@ class LoLaVertex:
         if not children:
             return VertexType.Premise
         return VertexType.NotALeaf
+
+    # return whether two vertices can connect
+    def canConnect(self, other):
+        return self.sequent is other.sequent and \
+               ((self.getVertexType() is VertexType.Premise and other.getVertexType() is VertexType.Conclusion)\
+               or (self.getVertexType() is VertexType.Conclusion and other.getVertexType() is VertexType.Premise))
 
     # returns a graph that unfolded from
     def unfoldVertex(self):

@@ -14,9 +14,9 @@ class NodeFactory:
         newId = self.getNewId()
         return LoLaLinkNode(newId, graph)
 
-    def createVertex(self, graph):
+    def createVertex(self, graph, sequent):
         newId = self.getNewId()
-        return LoLaVertex(newId, graph)
+        return LoLaVertex(newId, graph, sequent)
 
 
 
