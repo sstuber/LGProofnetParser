@@ -20,9 +20,9 @@ class LinkMode(Enum):
 
 class LoLaLinkNode:
 
-    def __init__(self, nodeId):
+    def __init__(self, nodeId, graph):
 
-        self.id = nodeId
+        self.nodeId = nodeId
 
         # list of premise vertices
         self.premises = []
@@ -38,33 +38,38 @@ class LoLaLinkNode:
         # vertex that combines the other nodes (main vertex)
         self.main = None
 
+        self.graph = graph
+
         print("")
 
     def __hash__(self):
-        return hash(self.id)
+        return hash(self.nodeId)
 
     def __eq__(self, other):
-        return self.id == other.id
+        if type(other) == int:
+            return self.nodeId == other
+        return self.nodeId == other.nodeId
 
 class LoLaVertex:
 
 
 
-    def __init__(self, nodeId):
+    def __init__(self, nodeId, graph):
 
-        self.id = nodeId
+        self.nodeId = nodeId
         self.vertexType = None
         self.sequent = ''
 
         # lola graph
-        self.graph = None
-
+        self.graph = graph
 
     def __hash__(self):
-        return hash(self.id)
+        return hash(self.nodeId)
 
     def __eq__(self, other):
-        return self.id == other.id
+        if type(other) == int:
+            return self.nodeId == other
+        return self.nodeId == other.nodeId
 
 
     # graph. getadjects of self
@@ -73,7 +78,14 @@ class LoLaVertex:
 
     # return the vertex type. Calculate with the graph
     def getVertexType(self):
-        return None
+        parents = self.graph.getParents(self.nodeId)
+        children = self.graph.getChildren(self.nodeId)
+
+        if not parents:
+            return VertexType.Conclusion
+        if not children:
+            return VertexType.Premise
+        return VertexType.NotALeaf
 
     # returns a graph that unfolded from
     def unfoldVertex(self):
