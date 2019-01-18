@@ -1,4 +1,4 @@
-
+from LoLaLinkNode import *
 
 
 
@@ -12,9 +12,11 @@ class NodeFactory:
 
     def createLinkNode(self):
         newId = self.getNewId()
+        return LoLaLinkNode(newId)
 
     def createVertex(self):
         newId = self.getNewId()
+        return LoLaVertex(newId)
 
 
 

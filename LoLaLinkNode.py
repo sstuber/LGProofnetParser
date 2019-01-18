@@ -22,7 +22,7 @@ class LoLaLinkNode:
 
     def __init__(self, nodeId):
 
-        self.id = nodeId
+        self.nodeId = nodeId
 
         # list of premise vertices
         self.premises = []
@@ -41,10 +41,12 @@ class LoLaLinkNode:
         print("")
 
     def __hash__(self):
-        return hash(self.id)
+        return hash(self.nodeId)
 
     def __eq__(self, other):
-        return self.id == other.id
+        if type(other) == int:
+            return self.nodeId == other
+        return self.nodeId == other.nodeId
 
 class LoLaVertex:
 
