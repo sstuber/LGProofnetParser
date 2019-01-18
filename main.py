@@ -64,8 +64,6 @@ if __name__ == '__main__':
 
     g1.getPossibleConnections(g2)
 
-    g1.draw()
-
     # nx.draw(g1.graph, show_labels=True)
     # plt.show()
     # nx.draw(g2.graph, show_labels=True)

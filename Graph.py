@@ -15,33 +15,26 @@ class LoLaGraph:
 
     # return list of new graphs that are possible steps
     def getPossibleConnections(self, otherGraph):
-        leaves = self.getLeaves()
-        otherLeaves = otherGraph.getLeaves()
-
-        # combinations = [zip(leaf, otherLeaves)
-        #                for leaf in itertools.permutations(leaves, len(otherLeaves))]
+        leaves = [leaf.nodeId for leaf in self.getLeaves()]
+        otherLeaves = [leaf.nodeId for leaf in otherGraph.getLeaves()]
 
         combinations = [zip(leaf, otherLeaves)
                        for leaf in itertools.permutations(leaves, len(otherLeaves))]
 
-        combinations = [all_combinations(list(combination)) for combination in combinations]
 
+        combinations = [list(ding) for ding in combinations]
 
-        # print(combination)
-        # print("###########")
-        # ding = list(all_combinations(combination))
-
-        # for poep in ding:
-        #     print(str(poep) + " " + str(self.connect(otherGraph, poep)))
-
+        combinations = [all_combinations(ding) for ding in combinations]
 
         newGraphs = []
-        for combination in combinations:
-            newGraph = self.connect(otherGraph, combination)
-            if newGraph:
-                newGraphs.append(newGraph)
+        for chain in combinations:
+            for combination in chain:
+                newGraph = self.connect(otherGraph, combination)
+                if newGraph:
+                    newGraphs.append(newGraph)
 
-        print(len(newGraphs))
+        for newGraph in newGraphs:
+            print(newGraph)
 
 
 
@@ -51,13 +44,13 @@ class LoLaGraph:
     def connect(self, otherGraph, connectionMap):
 
         for connection in connectionMap:
-            connection = [item for sublist in connection for item in sublist]
             v1 = self.getNode(connection[0])
             v2 = otherGraph.getNode(connection[1])
             if not v1.canConnect(v2):
                 return None
 
-        return True
+        #TODO: connect graphs according to map and return
+        return connectionMap
 
     # return list of new graphs that are possible contractions
     def contract(self):
@@ -110,10 +103,8 @@ class LoLaGraph:
         return children
 
     def draw(self):
-        # build color list
+        # build color list and label dictionary
         colors = []
-
-        # build label dictionary
         labels = {}
 
         for k, v in dict(self.graph.nodes()).items():
@@ -122,6 +113,7 @@ class LoLaGraph:
             if type(node) is LoLaVertex:
                 labels[node.nodeId] = node.sequent
 
+        # draw the graph
         nx.draw(self.graph, show_labels=True, labels=labels, node_color=colors, node_size=1000)
         plt.show()
 
