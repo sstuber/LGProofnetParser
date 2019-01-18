@@ -10,13 +10,13 @@ class NodeFactory:
         self.currentHighestId = self.currentHighestId +1
         return self.currentHighestId
 
-    def createLinkNode(self):
+    def createLinkNode(self, graph):
         newId = self.getNewId()
-        return LoLaLinkNode(newId)
+        return LoLaLinkNode(newId, graph)
 
-    def createVertex(self):
+    def createVertex(self, graph):
         newId = self.getNewId()
-        return LoLaVertex(newId)
+        return LoLaVertex(newId, graph)
 
 
 
