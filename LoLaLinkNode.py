@@ -1,6 +1,8 @@
 
 from enum import Enum
 from SequentParser import ParseSequent
+from unfold_vertex_functions import unfold_functions
+
 
 class VertexType(Enum):
     Premise = 'premise'
@@ -104,11 +106,14 @@ class LoLaVertex:
     # returns a graph that unfolded from
     def unfoldVertex(self):
 
-        parsedSequent = ParseSequent(self.sequent)
-        vertexType = self.getVertexType()
+        sequent_type, string_array = ParseSequent(self.sequent)
+        vertex_type = self.getVertexType()
 
+        current_unfold_function = unfold_functions[vertex_type][sequent_type]
 
-        print('fold')
+        unfolded_graph = current_unfold_function(self, string_array)
+
+        return unfolded_graph
 
     def getColor(self):
         return 'xkcd:sky blue'
