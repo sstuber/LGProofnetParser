@@ -7,7 +7,7 @@ class NodeFactory:
         self.currentHighestId = -1
 
     def getNewId(self):
-        self.currentHighestId = self.currentHighestId +1
+        self.currentHighestId = self.currentHighestId + 1
         return self.currentHighestId
 
     def createLinkNode(self, graph):

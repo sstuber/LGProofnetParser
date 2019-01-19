@@ -1,5 +1,6 @@
 
 from enum import Enum
+from SequentParser import ParseSequent
 
 class VertexType(Enum):
     Premise = 'premise'
@@ -18,11 +19,12 @@ class LinkMode(Enum):
     Binary = 'binary'
 
 
+ # todo Use and fill values
 class LoLaLinkNode:
 
     def __init__(self, nodeId, graph):
 
-        self.nodeId = nodeId
+        self.nodeId: int = nodeId
 
         # list of premise vertices
         self.premises = []
@@ -30,13 +32,13 @@ class LoLaLinkNode:
         # list of conclusion vertices
         self.conclusions = []
 
-        self.type = LinkType.Tensor
+        self.type: LinkType = LinkType.Tensor
 
         # type of function
-        self.mode = LinkMode.Binary
+        self.mode: LinkMode = LinkMode.Binary
 
         # vertex that combines the other nodes (main vertex)
-        self.main = None
+        self.main: LoLaVertex = None
 
         self.graph = graph
 
@@ -55,15 +57,13 @@ class LoLaLinkNode:
             return 'xkcd:light green'
         return 'xkcd:dark pink'
 
+
 class LoLaVertex:
-
-
 
     def __init__(self, nodeId, graph, sequent):
 
-        self.nodeId = nodeId
-        self.vertexType = None
-        self.sequent = sequent
+        self.nodeId: int = nodeId
+        self.sequent: str = sequent
 
         # lola graph
         self.graph = graph
@@ -79,6 +79,7 @@ class LoLaVertex:
     def __str__(self):
         return "%i: %s %s" % (self.nodeId, self.sequent, self.getVertexType())
 
+    # TODO implement
     # graph. getadjects of self
     def getLoLaLinkNodes(self):
         return None
@@ -95,13 +96,18 @@ class LoLaVertex:
         return VertexType.NotALeaf
 
     # return whether two vertices can connect
-    def canConnect(self, other):
+    def canConnect(self, other) -> bool:
         return self.sequent is other.sequent and \
                ((self.getVertexType() is VertexType.Premise and other.getVertexType() is VertexType.Conclusion)\
                or (self.getVertexType() is VertexType.Conclusion and other.getVertexType() is VertexType.Premise))
 
     # returns a graph that unfolded from
     def unfoldVertex(self):
+
+        parsedSequent = ParseSequent(self.sequent)
+        vertexType = self.getVertexType()
+
+
         print('fold')
 
     def getColor(self):

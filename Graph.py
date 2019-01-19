@@ -87,6 +87,9 @@ class LoLaGraph:
     def addNode(self, node):
         self.graph.add_node(node.nodeId, node=node)
 
+    def addEdge(self,child, parent):
+        self.graph.add_edge(child.nodeId, parent.nodeId, parent=parent.nodeId)
+
     # return the node from the graph with nodeId
     def getNode(self, nodeId):
         return self.graph.nodes()[nodeId]['node']
