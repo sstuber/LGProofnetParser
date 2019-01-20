@@ -2,6 +2,7 @@ from LoLaLinkNode import *
 import networkx as nx
 import itertools
 import matplotlib.pyplot as plt
+from NodeFactory import *
 
 class LoLaGraph:
 
@@ -72,7 +73,8 @@ class LoLaGraph:
 
         return contractions
 
-    # TODO: this currently connects two vertices without a link node, may lead to errors?
+    # TODO: this currently connects two vertices without a link node, may lead to errors? \
+    # Maybe the two vertices should become 1 new vertex
     # Contract a graph at vertex a return result. return none if impossible.
     def contract(self, vertex):
         # first assert the H vertex is not a conclusion
@@ -104,7 +106,7 @@ class LoLaGraph:
         newGraph.graph.remove_node(downLink)
         newGraph.graph.remove_nodes_from(sharedVertices)
 
-        newGraph.addEdge(vertex, conclusion)
+        newGraph.joinVertices(vertex, conclusion)
 
         return newGraph
 
@@ -125,13 +127,13 @@ class LoLaGraph:
     # add a node to the graph (index = nodeId)
     def addNode(self, node):
         self.graph.add_node(node.nodeId, node=node)
+        return node
 
     def addEdge(self,child, parent):
         self.graph.add_edge(child.nodeId, parent.nodeId, parent=parent.nodeId)
 
     def addEdge(self,child: int, parent: int):
         self.graph.add_edge(child, parent, parent=parent)
-
 
     # return the node from the graph with nodeId
     def getNode(self, nodeId):
@@ -151,6 +153,30 @@ class LoLaGraph:
             if parentId is nodeId:
                 parentId = newId
             self.graph.add_edge(newId, neighborId, parent=parentId)
+
+    # combine two vertices into one (after contraction)
+    def joinVertices(self, node, otherNode):
+        # get the adj of the node
+        nodeAdj = self.graph.adj[node]
+        # get the adj of the otherNode
+        otherNodeAdj = self.graph.adj[otherNode]
+        # create the union of both nodes
+        joinedNode = self.addNode(NODE_FACTORY.createVertex(self, "x"))
+        # remove the nodes from the graph
+        self.graph.remove_node(node)
+        self.graph.remove_node(otherNode)
+        # restore the edges
+        for neighborId, v in nodeAdj.items():
+            parentId = v['parent']
+            if parentId is node:
+                parentId = joinedNode.nodeId
+            self.graph.add_edge(joinedNode.nodeId, neighborId, parent=parentId)
+        for neighborId, v in otherNodeAdj.items():
+            parentId = v['parent']
+            if parentId is otherNode:
+                parentId = joinedNode.nodeId
+            self.graph.add_edge(joinedNode.nodeId, neighborId, parent=parentId)
+
 
     #TODO: ensure left first
     def getParents(self, nodeId):
