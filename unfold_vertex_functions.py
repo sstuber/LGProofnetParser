@@ -11,6 +11,7 @@ b_sequent_id = 2
 
 
 def no_operation(main_vertex, string_array):
+    main_vertex.is_unfolded = True
     return None
 
 
@@ -37,9 +38,12 @@ def get_unary_nodes(graph, string_array):
 
 
 def unfold_single_word(vertex: LoLaVertex, string_array):
+
+    vertex.is_unfolded = True
     graph = LoLaGraph()
 
     graph.addNode(vertex)
+    vertex.is_unfolded = True
     return graph
 
 
@@ -55,6 +59,7 @@ def unfold_premise_tensor(main_vertex: LoLaVertex, string_array) -> LoLaGraph:
     graph.addEdge(link_node, main_vertex)
     graph.addEdge(link_node, b_node)
 
+    main_vertex.is_unfolded = True
     return graph
 
 
@@ -69,6 +74,7 @@ def unfold_premise_forwardslash(main_vertex:LoLaVertex, string_array):
     graph.addEdge(link_node,b_node)
     graph.addEdge(a_node,link_node)
 
+    main_vertex.is_unfolded = True
     return graph
 
 
@@ -84,6 +90,7 @@ def unfold_premise_backwardslash(main_vertex, string_array):
     graph.addEdge(link_node, b_node)
     graph.addEdge(a_node, link_node)
 
+    main_vertex.is_unfolded = True
     return graph
 
 
@@ -97,6 +104,7 @@ def unfold_premise_square(main_vertex, string_array):
     graph.addEdge(link_node,main_vertex)
     graph.addEdge(a_node, link_node)
 
+    main_vertex.is_unfolded = True
     return graph
 
 
@@ -111,6 +119,7 @@ def unfold_premise_diamond(main_vertex, string_array):
     graph.addEdge(link_node,main_vertex)
     graph.addEdge(a_node, link_node)
 
+    main_vertex.is_unfolded = True
     return graph
 
 
@@ -126,6 +135,7 @@ def unfold_conclusion_forwardslash(main_vertex, string_array):
     graph.addEdge(b_node, link_node)
     graph.addEdge(main_vertex, link_node)
 
+    main_vertex.is_unfolded = True
     return graph
 
 
@@ -140,6 +150,7 @@ def unfold_conclusion_tensor(main_vertex, string_array):
     graph.addEdge(link_node, b_node)
     graph.addEdge(main_vertex, link_node)
 
+    main_vertex.is_unfolded = True
     return graph
 
 
@@ -155,6 +166,7 @@ def unfold_conclusion_backwardslash(main_vertex, string_array):
     graph.addEdge(b_node, link_node)
     graph.addEdge(main_vertex, link_node)
 
+    main_vertex.is_unfolded = True
     return graph
 
 
@@ -169,6 +181,7 @@ def unfold_conclusion_square(main_vertex, string_array):
     graph.addEdge(main_vertex, link_node)
     graph.addEdge(link_node, a_node)
 
+    main_vertex.is_unfolded = True
     return graph
 
 
@@ -182,6 +195,7 @@ def unfold_conclusion_diamond(main_vertex, string_array):
     graph.addEdge(main_vertex, link_node)
     graph.addEdge(link_node, a_node)
 
+    main_vertex.is_unfolded = True
     return graph
 
 

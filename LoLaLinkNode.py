@@ -67,6 +67,8 @@ class LoLaVertex:
         self.nodeId: int = nodeId
         self.sequent: str = sequent
 
+        self.is_unfolded: bool = False
+
         # lola graph
         self.graph = graph
 
@@ -99,9 +101,12 @@ class LoLaVertex:
 
     # return whether two vertices can connect
     def canConnect(self, other) -> bool:
+        self_vertex_type = self.getVertexType()
+        other_vertex_type = other.getVertexType()
+
         return self.sequent is other.sequent and \
-               ((self.getVertexType() is VertexType.Premise and other.getVertexType() is VertexType.Conclusion)\
-               or (self.getVertexType() is VertexType.Conclusion and other.getVertexType() is VertexType.Premise))
+               ((self_vertex_type is VertexType.Premise and other_vertex_type is VertexType.Conclusion)\
+               or (self_vertex_type is VertexType.Conclusion and other_vertex_type is VertexType.Premise))
 
     # returns a graph that unfolded from
     def unfoldVertex(self):
