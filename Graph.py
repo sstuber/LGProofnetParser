@@ -8,11 +8,7 @@ class LoLaGraph:
 
     def __init__(self, parent_graph=None):
         self.parentGraph = parent_graph
-
         self.graph = nx.Graph()
-
-        print('we graph now')
-
 
     # return list of new graphs that can be created from connecting with otherGraph
     def getPossibleConnections(self, otherGraph):
@@ -73,9 +69,7 @@ class LoLaGraph:
 
         return contractions
 
-    # TODO: this currently connects two vertices without a link node, may lead to errors? \
-    # Maybe the two vertices should become 1 new vertex
-    # Contract a graph at vertex a return result. return none if impossible.
+    # Contract a graph at vertex and return resulting graph. return none if impossible.
     def contract(self, vertex):
         # first assert the H vertex is not a conclusion
         if vertex.getVertexType() == VertexType.Conclusion:
@@ -110,9 +104,96 @@ class LoLaGraph:
 
         return newGraph
 
-    # acyclic, connected, without tensor links
+    # return list of new graphs that can be created from rewriting
+    def getPossibleRewritings(self):
+        rewritings = []
+        for link in self.getLinks():
+            rewriting = self.rewrite(link)
+            if rewriting:
+                for r in rewriting:
+                    rewritings.append(r)
+
+        return rewritings
+
+    # Rewrite a graph at vertex and return resulting graph. return none if impossible.
+    def rewrite(self, link):
+        # NOTE: contractions only happen to tensor links connected as > · <
+        if link.type is LinkType.Par:
+            return False
+        if link.getLinkShape(self) is LinkShape.Upward:
+            return False
+        if self.getNode(self.getChildren(link.nodeId)[0]).getVertexType() is VertexType.Conclusion:
+            return False
+
+        otherLink = self.getNode(self.getChildren(self.getChildren(link.nodeId)[0])[0])
+
+        if otherLink.type is LinkType.Par:
+            return False
+        if otherLink.getLinkShape(self) is LinkShape.Downward:
+            return False
+
+        # We are now certain that we are dealing with > · < tensor links
+        # There are 4 possible structural rewrites
+        # in each rewrite, the tensor changes shape
+
+        x, y = self.getParents(link.nodeId)
+        u = link.getSharedVertices(otherLink, self)[0]
+        v, w = self.getChildren(otherLink.nodeId)
+
+        return [self.applyStructuralRule(link, otherLink, x, y, u, v, w, 0),
+                self.applyStructuralRule(link, otherLink, x, y, u, v, w, 1),
+                self.applyStructuralRule(link, otherLink, x, y, u, v, w, 2),
+                self.applyStructuralRule(link, otherLink, x, y, u, v, w, 3)]
+
+    # apply structural rule to rewrite graph
+    def applyStructuralRule(self, link, otherLink, x, y, u, v, w, rule):
+        newGraph = LoLaGraph(self)
+        newGraph.graph = self.graph.copy()
+        newGraph.graph.remove_node(link)
+        newGraph.graph.remove_node(otherLink)
+        newLink = newGraph.addNode(NODE_FACTORY.createLinkNode(self))
+        newOtherLink = newGraph.addNode(NODE_FACTORY.createLinkNode(self))
+
+        if rule is 0:
+            newGraph.addEdge(newLink, x)
+            newGraph.addEdge(v, newLink)
+            newGraph.addEdge(u, newLink)
+            newGraph.addEdge(newOtherLink, u)
+            newGraph.addEdge(newOtherLink, y)
+            newGraph.addEdge(w, newOtherLink)
+        elif rule is 1:
+            newGraph.addEdge(newLink, x)
+            newGraph.addEdge(v, newLink)
+            newGraph.addEdge(newLink, u)
+            newGraph.addEdge(u, newOtherLink)
+            newGraph.addEdge(newOtherLink, y)
+            newGraph.addEdge(w, newOtherLink)
+        elif rule is 2:
+            newGraph.addEdge(newLink, x)
+            newGraph.addEdge(u, newLink)
+            newGraph.addEdge(w, newLink)
+            newGraph.addEdge(newOtherLink, u)
+            newGraph.addEdge(newOtherLink, y)
+            newGraph.addEdge(v, newOtherLink)
+        elif rule is 3:
+            newGraph.addEdge(newLink, y)
+            newGraph.addEdge(v, newLink)
+            newGraph.addEdge(u, newLink)
+            newGraph.addEdge(newOtherLink, x)
+            newGraph.addEdge(newOtherLink, u)
+            newGraph.addEdge(w, newOtherLink)
+        return newGraph
+
+    # acyclic, connected, without cotensor links
     def isTensorTree(self):
-        return False
+        if not nx.is_connected(self.graph):
+            return False
+        for link in self.getLinks():
+            if link.type is LinkType.Par:
+                return False
+        if nx.find_cycle(self.graph, 'ignore'):
+            return False
+        return True
 
     # return all vertices that are leaves
     def getLeaves(self):
@@ -201,6 +282,9 @@ class LoLaGraph:
 
     def getVertices(self):
         return [self.getNode(v) for v in self.graph.nodes() if type(self.getNode(v)) is LoLaVertex]
+
+    def getLinks(self):
+        return [self.getNode(v) for v in self.graph.nodes() if type(self.getNode(v)) is LoLaLinkNode]
 
     def draw(self):
         # build color list and label dictionary

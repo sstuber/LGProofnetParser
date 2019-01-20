@@ -47,10 +47,8 @@ class LoLaLinkNode:
 
         self.graph = graph
 
-        print("")
-
     def getLinkShape(self, graph):
-        if graph.getParents(self.nodeId).size() == 2:
+        if len(graph.getParents(self.nodeId)) == 2:
             return LinkShape.Downward
         return LinkShape.Upward
 

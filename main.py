@@ -20,6 +20,7 @@ if __name__ == '__main__':
 
     print("begin test connection")
     g1 = LoLaGraph()
+
     g1.addNode(NODE_FACTORY.createLinkNode(g1)) #0
     g1.addNode(NODE_FACTORY.createLinkNode(g1)) #1
 
@@ -38,6 +39,7 @@ if __name__ == '__main__':
     g1.graph.add_edge(1, 6, parent=1)
 
     g2 = LoLaGraph()
+
     g2.addNode(NODE_FACTORY.createLinkNode(g2)) #7
     g2.addNode(NODE_FACTORY.createLinkNode(g2)) #8
 
@@ -61,6 +63,7 @@ if __name__ == '__main__':
     print("begin test connection")
 
     g3 = LoLaGraph()
+
     g3.addNode(NODE_FACTORY.createLinkNode(g3)) #14
     g3.addNode(NODE_FACTORY.createLinkNode(g3)) #15
     g3.getNode(15).type = LinkType.Par
@@ -79,10 +82,30 @@ if __name__ == '__main__':
 
     contractions = g3.getPossibleContractions()
 
-    g3.draw()
-    for g in contractions:
-        g.draw()
-
     print("end test contract")
+
+    print("begin test rewrite")
+
+    g4 = LoLaGraph()
+
+    g4.addNode(NODE_FACTORY.createLinkNode(g4)) #21
+    g4.addNode(NODE_FACTORY.createLinkNode(g4)) #22
+
+    g4.addNode(NODE_FACTORY.createVertex(g4, "x")) #23
+    g4.addNode(NODE_FACTORY.createVertex(g4, "y")) #24
+    g4.addNode(NODE_FACTORY.createVertex(g4, "u")) #25
+    g4.addNode(NODE_FACTORY.createVertex(g4, "v")) #26
+    g4.addNode(NODE_FACTORY.createVertex(g4, "w")) #27
+
+    g4.addEdge(21, 23)
+    g4.addEdge(21, 24)
+    g4.addEdge(25, 21)
+    g4.addEdge(22, 25)
+    g4.addEdge(26, 22)
+    g4.addEdge(27, 22)
+
+    rewritings = g4.getPossibleRewritings()
+
+    print("end test rewrite")
 
     print("end main")
