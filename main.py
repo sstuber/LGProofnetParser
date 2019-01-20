@@ -18,6 +18,7 @@ if __name__ == '__main__':
 
     print("begin main")
 
+    print("begin test connection")
     g1 = LoLaGraph()
     g1.addNode(NODE_FACTORY.createLinkNode(g1)) #0
     g1.addNode(NODE_FACTORY.createLinkNode(g1)) #1
@@ -53,21 +54,35 @@ if __name__ == '__main__':
     g2.graph.add_edge(8, 11, parent=11)
     g2.graph.add_edge(8, 12, parent=12)
     g2.graph.add_edge(8, 13, parent=8)
-
-    # print("g1 leaves:")
-    # for leaf in g1.getLeaves():
-    #     print(leaf)
-    #
-    # print("g2 leaves:")
-    # for leaf in g2.getLeaves():
-    #     print(leaf)
-
     g1.getPossibleConnections(g2)
 
-    # nx.draw(g1.graph, show_labels=True)
-    # plt.show()
-    # nx.draw(g2.graph, show_labels=True)
-    # plt.show()
+    print("end test connection")
 
+    print("begin test connection")
+
+    g3 = LoLaGraph()
+    g3.addNode(NODE_FACTORY.createLinkNode(g3)) #14
+    g3.addNode(NODE_FACTORY.createLinkNode(g3)) #15
+    g3.getNode(15).type = LinkType.Par
+
+    g3.addNode(NODE_FACTORY.createVertex(g3, "w")) #16
+    g3.addNode(NODE_FACTORY.createVertex(g3, "x")) #17
+    g3.addNode(NODE_FACTORY.createVertex(g3, "y")) #18
+    g3.addNode(NODE_FACTORY.createVertex(g3, "z")) #19
+
+    g3.addEdge(14, 16)
+    g3.addEdge(14, 17)
+    g3.addEdge(18, 14)
+    g3.addEdge(15, 18)
+    g3.addEdge(17, 15)
+    g3.addEdge(19, 15)
+
+    contractions = g3.getPossibleContractions()
+
+    g3.draw()
+    for g in contractions:
+        g.draw()
+
+    print("end test contract")
 
     print("end main")

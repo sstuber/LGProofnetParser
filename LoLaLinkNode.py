@@ -1,8 +1,8 @@
 
 from enum import Enum
 from SequentParser import ParseSequent
-from unfold_vertex_functions import unfold_functions
-
+# from unfold_vertex_functions import unfold_functions
+# TODO: Fix circular dependency between lolalinknode and unfold_vertex_functions
 
 class VertexType(Enum):
     Premise = 'premise'
@@ -14,6 +14,9 @@ class LinkType(Enum):
     Tensor = 'tensor'
     Par = 'Par'
 
+class LinkShape(Enum):
+    Downward = 'downward'
+    Upward = 'upward'
 
 # type of function
 class LinkMode(Enum):
@@ -45,6 +48,16 @@ class LoLaLinkNode:
         self.graph = graph
 
         print("")
+
+    def getLinkShape(self, graph):
+        if graph.getParents(self.nodeId).size() == 2:
+            return LinkShape.Downward
+        return LinkShape.Upward
+
+    def getSharedVertices(self, otherLink, graph):
+        return list(set(graph.getNeighbors(self.nodeId)).intersection(
+            set(graph.getNeighbors(otherLink.nodeId))
+        ))
 
     def __hash__(self):
         return hash(self.nodeId)
@@ -83,20 +96,15 @@ class LoLaVertex:
     def __str__(self):
         return "%i: %s %s" % (self.nodeId, self.sequent, self.getVertexType())
 
-    # TODO implement
-    # graph. getadjects of self
-    def getLoLaLinkNodes(self):
-        return None
-
     # return the vertex type. Calculate with the graph
     def getVertexType(self):
         parents = self.graph.getParents(self.nodeId)
         children = self.graph.getChildren(self.nodeId)
 
         if not parents:
-            return VertexType.Conclusion
-        if not children:
             return VertexType.Premise
+        if not children:
+            return VertexType.Conclusion
         return VertexType.NotALeaf
 
     # return whether two vertices can connect
@@ -108,19 +116,17 @@ class LoLaVertex:
                ((self_vertex_type is VertexType.Premise and other_vertex_type is VertexType.Conclusion)\
                or (self_vertex_type is VertexType.Conclusion and other_vertex_type is VertexType.Premise))
 
-    # returns a graph that unfolded from
-    def unfoldVertex(self):
-
-        sequent_type, string_array = ParseSequent(self.sequent)
-        vertex_type = self.getVertexType()
-
-        current_unfold_function = unfold_functions[vertex_type][sequent_type]
-
-        unfolded_graph = current_unfold_function(self, string_array)
-
-        return unfolded_graph
+    # # returns a graph that unfolded from
+    # def unfoldVertex(self):
+    #
+    #     sequent_type, string_array = ParseSequent(self.sequent)
+    #     vertex_type = self.getVertexType()
+    #
+    #     current_unfold_function = unfold_functions[vertex_type][sequent_type]
+    #
+    #     unfolded_graph = current_unfold_function(self, string_array)
+    #
+    #     return unfolded_graph
 
     def getColor(self):
         return 'xkcd:sky blue'
-
-

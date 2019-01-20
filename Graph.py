@@ -13,7 +13,7 @@ class LoLaGraph:
         print('we graph now')
 
 
-    # return list of new graphs that are possible steps
+    # return list of new graphs that can be created from connecting with otherGraph
     def getPossibleConnections(self, otherGraph):
         leaves = [leaf.nodeId for leaf in self.getLeaves()]
         otherLeaves = [leaf.nodeId for leaf in otherGraph.getLeaves()]
@@ -62,14 +62,51 @@ class LoLaGraph:
 
         return newGraph
 
-    #TODO: Implement
+    # return list of new graphs that can be created from contracting
     def getPossibleContractions(self):
-        return False
+        contractions = []
+        for vertex in self.getVertices():
+            contraction = self.contract(vertex)
+            if contraction:
+                contractions.append(contraction)
 
-    #TODO: Implement
-    # return list of new graphs that are possible contractions
-    def contract(self):
-        print('we contracted')
+        return contractions
+
+    # TODO: this currently connects two vertices without a link node, may lead to errors?
+    # Contract a graph at vertex a return result. return none if impossible.
+    def contract(self, vertex):
+        # first assert the H vertex is not a conclusion
+        if vertex.getVertexType() == VertexType.Conclusion:
+            return None
+        # this is the upper of two links
+        upperLink = self.getNode(self.getChildren(vertex.nodeId)[0])
+        downLink = self.getNode(self.getChildren(self.getChildren(upperLink.nodeId)[0])[0])
+
+        # the links must be a different type
+        if upperLink.type == downLink.type:
+            return None
+        # the links must share two vertices
+        sharedVertices = upperLink.getSharedVertices(downLink, self)
+        if len(sharedVertices) is not 2:
+            return None
+        # the shared vertices may not include the hypothesis
+        if vertex.nodeId in sharedVertices:
+            return None
+
+        # the conclusion is the child of the remaining link that is not in shared vertices
+        conclusion = [v for v in self.getChildren(downLink.nodeId) if v not in sharedVertices][0]
+
+        # remove the two links and the shared vertices
+        newGraph = LoLaGraph(self)
+        newGraph.graph = self.graph.copy()
+
+        newGraph.graph.remove_node(upperLink)
+        newGraph.graph.remove_node(downLink)
+        newGraph.graph.remove_nodes_from(sharedVertices)
+
+        newGraph.addEdge(vertex, conclusion)
+
+        return newGraph
 
     # acyclic, connected, without tensor links
     def isTensorTree(self):
@@ -91,6 +128,10 @@ class LoLaGraph:
 
     def addEdge(self,child, parent):
         self.graph.add_edge(child.nodeId, parent.nodeId, parent=parent.nodeId)
+
+    def addEdge(self,child: int, parent: int):
+        self.graph.add_edge(child, parent, parent=parent)
+
 
     # return the node from the graph with nodeId
     def getNode(self, nodeId):
@@ -121,13 +162,19 @@ class LoLaGraph:
         return parents
 
     #TODO: ensure left first
-    def getChildren(self, nodeId):
+    def getChildren(self, nodeId: int):
         adj = self.graph.adj[nodeId]
         children = []
         for k, v in dict(adj).items():
             if v['parent'] is nodeId:
                 children.append(k)
         return children
+
+    def getNeighbors(self, nodeId):
+        return self.getParents(nodeId) + self.getChildren(nodeId)
+
+    def getVertices(self):
+        return [self.getNode(v) for v in self.graph.nodes() if type(self.getNode(v)) is LoLaVertex]
 
     def draw(self):
         # build color list and label dictionary
