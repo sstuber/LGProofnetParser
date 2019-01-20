@@ -38,9 +38,8 @@ class LoLaGraph:
                     if newGraph:
                         newGraphs.append(newGraph)
 
-        for newGraph in newGraphs:
-            newGraph.draw()
-
+        # for newGraph in newGraphs:
+        #     newGraph.draw()
 
     # connect two graphs
     # return new graph if connectionMap is exactly possible
@@ -53,8 +52,6 @@ class LoLaGraph:
             if not v1.canConnect(v2):
                 return None
 
-        #TODO: connect graphs according to map and return
-
         newGraph = LoLaGraph(self)
         newGraph.graph = self.graph.copy()
 
@@ -65,11 +62,16 @@ class LoLaGraph:
 
         return newGraph
 
+    #TODO: Implement
+    def getPossibleContractions(self):
+        return False
+
+    #TODO: Implement
     # return list of new graphs that are possible contractions
     def contract(self):
         print('we contracted')
 
-    # returns bool
+    # acyclic, connected, without tensor links
     def isTensorTree(self):
         return False
 
@@ -106,8 +108,7 @@ class LoLaGraph:
                 parentId = newId
             self.graph.add_edge(newId, neighborId, parent=parentId)
 
-
-
+    #TODO: ensure left first
     def getParents(self, nodeId):
         adj = self.graph.adj[nodeId]
         parents = []
@@ -116,6 +117,7 @@ class LoLaGraph:
                 parents.append(k)
         return parents
 
+    #TODO: ensure left first
     def getChildren(self, nodeId):
         adj = self.graph.adj[nodeId]
         children = []
