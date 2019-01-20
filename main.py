@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     print("end test connection")
 
-    print("begin test connection")
+    print("begin test contraction")
 
     g3 = LoLaGraph()
 
@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
     contractions = g3.getPossibleContractions()
 
-    print("end test contract")
+    print("end test contraction")
 
     print("begin test rewrite")
 
