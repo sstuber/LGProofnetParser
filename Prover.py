@@ -17,9 +17,9 @@ class Prover:
         sequence_lists = map(lambda x: lexicon[x], words)
         unfolded_graphs = list(map(create_unfolded_graph_list_from_word, sequence_lists))
         derivations = []
-        lexiconCombinations = list(itertools.product(*unfolded_graphs))
-        for lexiconCombination in lexiconCombinations:
-            perms = list(itertools.permutations(lexiconCombination))
+        lexicalCombinations = list(itertools.product(*unfolded_graphs))
+        for lexicalCombination in lexicalCombinations:
+            perms = list(itertools.permutations(lexicalCombination))
 
             graphs = []
             for perm in perms:
