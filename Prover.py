@@ -1,4 +1,5 @@
 from LoLaLinkNode import *
+from Graph import *
 
 class Prover:
     def __init__(self):
@@ -18,3 +19,12 @@ class Prover:
 
     def buildGraph(self):
         return True
+
+    def create_unfolded_graph_from_word(self, sequent):
+        graph = LoLaGraph()
+        graph.addNode(NODE_FACTORY.createVertex(graph, sequent))
+
+        graph = graph.unfold_graph()
+
+        return graph
+
