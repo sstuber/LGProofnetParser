@@ -1,30 +1,12 @@
-
-from enum import Enum
+from LoLaDatatypes import VertexType, LinkType, LinkShape, LinkMode
 from SequentParser import ParseSequent
-# from unfold_vertex_functions import unfold_functions
 # TODO: Fix circular dependency between lolalinknode and unfold_vertex_functions
 
-class VertexType(Enum):
-    Premise = 'premise'
-    Conclusion = 'conclusion'
-    NotALeaf = 'notaleaf'
-
-
-class LinkType(Enum):
-    Tensor = 'tensor'
-    Par = 'Par'
-
-class LinkShape(Enum):
-    Downward = 'downward'
-    Upward = 'upward'
 
 # type of function
-class LinkMode(Enum):
-    Unary = 'unary'
-    Binary = 'binary'
 
 
- # todo Use and fill values
+# todo Use and fill values
 class LoLaLinkNode:
 
     def __init__(self, nodeId, graph):
@@ -99,6 +81,9 @@ class LoLaVertex:
         parents = self.graph.getParents(self.nodeId)
         children = self.graph.getChildren(self.nodeId)
 
+        if self.graph.node_count() == 1:
+            return VertexType.Conclusion
+
         if not parents:
             return VertexType.Premise
         if not children:
@@ -111,20 +96,18 @@ class LoLaVertex:
         other_vertex_type = other.getVertexType()
 
         return self.sequent is other.sequent and \
-               ((self_vertex_type is VertexType.Premise and other_vertex_type is VertexType.Conclusion)\
-               or (self_vertex_type is VertexType.Conclusion and other_vertex_type is VertexType.Premise))
+               ((self_vertex_type is VertexType.Premise and other_vertex_type is VertexType.Conclusion) \
+                or (self_vertex_type is VertexType.Conclusion and other_vertex_type is VertexType.Premise))
 
-    # # returns a graph that unfolded from
-    # def unfoldVertex(self):
-    #
-    #     sequent_type, string_array = ParseSequent(self.sequent)
-    #     vertex_type = self.getVertexType()
-    #
-    #     current_unfold_function = unfold_functions[vertex_type][sequent_type]
-    #
-    #     unfolded_graph = current_unfold_function(self, string_array)
-    #
-    #     return unfolded_graph
+     # returns a graph that unfolded from
+    def unfoldVertex(self, unfold_function, new_graph):
+
+        sequent_type, string_array = ParseSequent(self.sequent)
+        vertex_type = self.getVertexType()
+
+        changed_graph = unfold_function(vertex_type, sequent_type, self, string_array, new_graph)
+
+        return changed_graph
 
     def getColor(self):
         return 'xkcd:sky blue'

@@ -1,8 +1,8 @@
 
-from LoLaLinkNode import LoLaVertex, LoLaLinkNode, VertexType
+from LoLaDatatypes import LinkType, LinkMode, VertexType
 from NodeFactory import NODE_FACTORY
 from SequentParser import SequentType
-from Graph import *
+
 
 
 combined_sequent_id = 0
@@ -10,7 +10,7 @@ a_sequent_id = 1
 b_sequent_id = 2
 
 
-def no_operation(main_vertex, string_array):
+def no_operation(main_vertex, string_array, graph):
     main_vertex.is_unfolded = True
     return None
 
@@ -22,7 +22,7 @@ def get_binary_nodes(graph, string_array):
     b_sequent = string_array[b_sequent_id]
     b_node = NODE_FACTORY.createVertex(graph, b_sequent)
 
-    link_node: LoLaLinkNode = NODE_FACTORY.createLinkNode(graph)
+    link_node = NODE_FACTORY.createLinkNode(graph)
 
     graph.addNode(a_node)
     graph.addNode(b_node)
@@ -35,7 +35,7 @@ def get_unary_nodes(graph, string_array):
     a_sequent = string_array[a_sequent_id]
     a_node = NODE_FACTORY.createVertex(graph, a_sequent)
 
-    link_node: LoLaLinkNode = NODE_FACTORY.createLinkNode(graph)
+    link_node = NODE_FACTORY.createLinkNode(graph)
     link_node.mode = LinkMode.Unary
 
     graph.addNode(a_node)
@@ -44,18 +44,17 @@ def get_unary_nodes(graph, string_array):
     return a_node, link_node
 
 
-def unfold_single_word(vertex: LoLaVertex, string_array):
+def unfold_single_word(vertex, string_array, graph):
 
     vertex.is_unfolded = True
-    graph = LoLaGraph()
 
     graph.addNode(vertex)
     vertex.is_unfolded = True
     return graph
 
 
-def unfold_premise_tensor(main_vertex: LoLaVertex, string_array) -> LoLaGraph:
-    graph = LoLaGraph()
+def unfold_premise_tensor(main_vertex, string_array, graph):
+
     graph.addNode(main_vertex)
 
     a_node, b_node, link_node = get_binary_nodes(graph,string_array)
@@ -71,8 +70,8 @@ def unfold_premise_tensor(main_vertex: LoLaVertex, string_array) -> LoLaGraph:
     return graph
 
 
-def unfold_premise_forwardslash(main_vertex:LoLaVertex, string_array):
-    graph = LoLaGraph()
+def unfold_premise_forwardslash(main_vertex, string_array, graph):
+
     graph.addNode(main_vertex)
 
     a_node, b_node, link_node = get_binary_nodes(graph, string_array)
@@ -88,11 +87,11 @@ def unfold_premise_forwardslash(main_vertex:LoLaVertex, string_array):
 
 
 # since there is not yet a difference between right and left
-def unfold_premise_backwardslash(main_vertex, string_array):
-    graph = LoLaGraph()
+def unfold_premise_backwardslash(main_vertex, string_array, graph):
+
     graph.addNode(main_vertex)
 
-    a_node, b_node, link_node = get_binary_nodes(graph, string_array)
+    b_node, a_node, link_node = get_binary_nodes(graph, string_array)
 
     link_node.main = main_vertex
 
@@ -104,8 +103,8 @@ def unfold_premise_backwardslash(main_vertex, string_array):
     return graph
 
 
-def unfold_premise_square(main_vertex, string_array):
-    graph = LoLaGraph()
+def unfold_premise_square(main_vertex, string_array, graph):
+
     graph.addNode(main_vertex)
 
     a_node, link_node = get_unary_nodes(graph,string_array)
@@ -119,8 +118,8 @@ def unfold_premise_square(main_vertex, string_array):
     return graph
 
 
-def unfold_premise_diamond(main_vertex, string_array):
-    graph = LoLaGraph()
+def unfold_premise_diamond(main_vertex, string_array, graph):
+
     graph.addNode(main_vertex)
 
     a_node, link_node = get_unary_nodes(graph,string_array)
@@ -135,8 +134,8 @@ def unfold_premise_diamond(main_vertex, string_array):
     return graph
 
 
-def unfold_conclusion_forwardslash(main_vertex, string_array):
-    graph = LoLaGraph()
+def unfold_conclusion_forwardslash(main_vertex, string_array, graph):
+
     graph.addNode(main_vertex)
 
     a_node, b_node, link_node = get_binary_nodes(graph, string_array)
@@ -152,8 +151,8 @@ def unfold_conclusion_forwardslash(main_vertex, string_array):
     return graph
 
 
-def unfold_conclusion_tensor(main_vertex, string_array):
-    graph = LoLaGraph()
+def unfold_conclusion_tensor(main_vertex, string_array, graph):
+
     graph.addNode(main_vertex)
 
     a_node, b_node, link_node = get_binary_nodes(graph, string_array)
@@ -168,11 +167,11 @@ def unfold_conclusion_tensor(main_vertex, string_array):
     return graph
 
 
-def unfold_conclusion_backwardslash(main_vertex, string_array):
-    graph = LoLaGraph()
+def unfold_conclusion_backwardslash(main_vertex, string_array, graph):
+
     graph.addNode(main_vertex)
 
-    a_node, b_node, link_node = get_binary_nodes(graph, string_array)
+    b_node, a_node, link_node = get_binary_nodes(graph, string_array)
 
     link_node.main = main_vertex
     link_node.type = LinkType.Par
@@ -185,8 +184,8 @@ def unfold_conclusion_backwardslash(main_vertex, string_array):
     return graph
 
 
-def unfold_conclusion_square(main_vertex, string_array):
-    graph = LoLaGraph()
+def unfold_conclusion_square(main_vertex, string_array, graph):
+
     graph.addNode(main_vertex)
 
     a_node, link_node = get_unary_nodes(graph,string_array)
@@ -201,8 +200,8 @@ def unfold_conclusion_square(main_vertex, string_array):
     return graph
 
 
-def unfold_conclusion_diamond(main_vertex, string_array):
-    graph = LoLaGraph()
+def unfold_conclusion_diamond(main_vertex, string_array, graph):
+
     graph.addNode(main_vertex)
 
     a_node, link_node = get_unary_nodes(graph,string_array)
@@ -216,10 +215,22 @@ def unfold_conclusion_diamond(main_vertex, string_array):
     return graph
 
 
-# TODO note to self; conclusion moeten misschien de premisses zijn en andersom
-# premise zijn nu de [L] rules en conclusion de [R] rules
+# if something is a premise already it can only be a conclusion in the next unfold
+# if something is a conclusion already it can only b a premise in the next unfold
+def unfoldVertex(vertex_type, sequent_type, main_vertex, string_array, graph):
+
+    current_unfold_function = unfold_functions[vertex_type][sequent_type]
+
+    unfolded_graph = current_unfold_function(main_vertex, string_array, graph)
+    return unfolded_graph
+
+
+# a functions has to contain
+# - main_vertex.is_unfolded = true
+# - graph.add_node(main_vertex)
+
 unfold_functions = {
-    VertexType.Premise: {
+    VertexType.Conclusion: {
         SequentType.SingleWord: no_operation,
         SequentType.Tensor: unfold_premise_tensor,
         SequentType.ForwardSlash: unfold_premise_forwardslash,
@@ -227,13 +238,13 @@ unfold_functions = {
         SequentType.Diamond: unfold_premise_diamond,
         SequentType.Square: unfold_premise_square
     },
-    VertexType.Conclusion: {
+    VertexType.Premise: {
         SequentType.SingleWord: no_operation,
         SequentType.Tensor: unfold_conclusion_tensor,
         SequentType.ForwardSlash: unfold_conclusion_forwardslash,
         SequentType.BackwardSlash: unfold_conclusion_backwardslash,
         SequentType.Diamond: unfold_conclusion_diamond,
-        SequentType.Square: unfold_conclusion_diamond
+        SequentType.Square: unfold_conclusion_square
     },
     VertexType.NotALeaf: {
         SequentType.SingleWord: no_operation,
