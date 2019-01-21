@@ -1,0 +1,7 @@
+word,type
+test,np
+kids,np
+love,(np\s)/np
+love,np\(s/np)
+parents,np
+super_mario,np
