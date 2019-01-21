@@ -324,7 +324,7 @@ class LoLaGraph:
                 labels[node.nodeId] = str(node.nodeId) + " " + node.sequent
 
         # draw the graph
-        nx.draw(self.graph, show_labels=True, labels=labels, node_color=colors, node_size=1000)
+        nx.draw(self.graph, show_labels=True, labels=labels, node_color=colors, node_size=250, font_size=8)
         plt.show()
 
 def all_combinations(any_list):
