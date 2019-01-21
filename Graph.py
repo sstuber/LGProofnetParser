@@ -189,9 +189,11 @@ class LoLaGraph:
         for link in self.getLinks():
             if link.type is LinkType.Par:
                 return False
-        if nx.find_cycle(self.graph, 'ignore'):
+        try:
+            nx.find_cycle(self.graph, 'ignore')
             return False
-        return True
+        except:
+            return True
 
     # return all vertices that are leaves
     def getLeaves(self):

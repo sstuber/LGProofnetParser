@@ -3,6 +3,7 @@ from functools import reduce
 import re
 from Graph import *
 import itertools
+import networkx as nx
 
 TYPES_PATH = './lexicon.csv'
 
@@ -56,22 +57,29 @@ class Prover:
                 accumulatedGraphs = tmpGraphs
             graphs = graphs + accumulatedGraphs
 
-        graphs = [g for g in graphs if len(g.getConclusions()) is 1 and g.getConclusions()[0].sequent is targetType]
-        for g in graphs:
-            g.draw()
-        # derivations = []
-        # while graphs:
-        #     graph = graphs.pop()
-        #     if graph.isTensorTree():
-        #         derivations.append(graph)
-        #         continue
-        #
-        #     graphs = graphs + graph.getPossibleContractions()
-        #     graphs = graphs + graph.getPossibleRewritings()
-        #
-        # for derivation in derivations:
-        #     # return the proof term
-        #     print("ik ben een derivation")
+        graphs = [g for g in graphs if len(g.getConclusions()) == 1 and g.getConclusions()[0].sequent == targetType]
+        #TODO: remove duplicate graphs and this line below
+        graphs = [graphs[0]]
+        # g1.draw()
+        # g2.draw()
+
+
+        # for g in graphs:
+        #     g.draw()
+
+        derivations = []
+        while graphs:
+            graph = graphs.pop()
+            if graph.isTensorTree():
+                derivations.append(graph)
+                continue
+
+            graphs = graphs + graph.getPossibleContractions()
+            graphs = graphs + graph.getPossibleRewritings()
+
+        for derivation in derivations:
+            # return the proof term
+            print("ik ben een derivation")
 
     def buildGraph(self):
         return True
