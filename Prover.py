@@ -15,7 +15,8 @@ class Prover:
         g2 = LoLaGraph()
         g3 = LoLaGraph()
 
-        g1.addNode(NODE_FACTORY.createVertex(g1, "np"))
+        aap = g1.addNode(NODE_FACTORY.createVertex(g1, "np"))
+
         l1 = g2.addNode(NODE_FACTORY.createLinkNode(g2))
         l2 = g2.addNode(NODE_FACTORY.createLinkNode(g2))
         n1 = g2.addNode(NODE_FACTORY.createVertex(g2, "(np\s)/np"))
@@ -54,19 +55,19 @@ class Prover:
 
 
 
-        derivations = []
-        while graphs:
-            graph = graphs.pop()
-            if graph.isTensorTree():
-                derivations.append(graph)
-                continue
-
-            graphs = graphs + graph.getPossibleContractions()
-            graphs = graphs + graph.getPossibleRewritings()
-
-        for derivation in derivations:
-            # return the proof term
-            print("ik ben een derivation")
+        # derivations = []
+        # while graphs:
+        #     graph = graphs.pop()
+        #     if graph.isTensorTree():
+        #         derivations.append(graph)
+        #         continue
+        #
+        #     graphs = graphs + graph.getPossibleContractions()
+        #     graphs = graphs + graph.getPossibleRewritings()
+        #
+        # for derivation in derivations:
+        #     # return the proof term
+        #     print("ik ben een derivation")
 
     def buildGraph(self):
         return True

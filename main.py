@@ -1,7 +1,7 @@
 import networkx as nx
 import LoLaLinkNode
 import matplotlib.pyplot as plt
-
+from Prover import *
 from NodeFactory import *
 from Graph import *
 
@@ -16,16 +16,16 @@ upgraded_regex = r'(diamond)?(square)?(\w+|\(.+\))(\/|\\)(diamond)?(square)?(\(.
 #(diamond)?(square)?(\w+|\(.+\))(\/|\\)(diamond)?(square)?(\(.+\)|\w+)|(diamond)?(square)?(\w+)
 if __name__ == '__main__':
 
-    graph = LoLaGraph()
-
-    graph.addNode(NODE_FACTORY.createVertex(graph, '(np\s)/np'))
-
-    new_graph = graph.unfold_graph()
-
-
-    new_graph.getNode(0)
-
-    new_graph.draw()
+    # graph = LoLaGraph()
+    #
+    # graph.addNode(NODE_FACTORY.createVertex(graph, '(np\s)/np'))
+    #
+    # new_graph = graph.unfold_graph()
+    #
+    #
+    # new_graph.getNode(0)
+    #
+    # new_graph.draw()
     # print("begin main")
     #
     # print("begin test connection")
@@ -117,5 +117,11 @@ if __name__ == '__main__':
     # rewritings = g4.getPossibleRewritings()
     #
     # print("end test rewrite")
-    #
-    # print("end main")
+    print("begin test 'Kids love Super_Mario'")
+    prover = Prover()
+    sentence = "Kids love Super_Mario"
+    lexicon = {"kids":"np", "love":"(np\s)/np", "super_mario":"np"}
+    prover.prove(sentence, lexicon, "s")
+    print("end test 'Kids love Super_Mario'")
+
+    print("end main")

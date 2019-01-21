@@ -17,28 +17,20 @@ class LoLaGraph:
         leaves = [leaf.nodeId for leaf in self.getLeaves()]
         otherLeaves = [leaf.nodeId for leaf in otherGraph.getLeaves()]
 
+        # NOTE: len(leaves) must be geq than len(otherLeaves)
+        if len(leaves) < len(otherLeaves):
+            return otherGraph.getPossibleConnections(self)
+
         combinations = [zip(leaf, otherLeaves)
                        for leaf in itertools.permutations(leaves, len(otherLeaves))]
 
-
-        combinations = [list(ding) for ding in combinations]
-
-
-
-        combinations = [all_combinations(ding) for ding in combinations]
-
-        visited = set()
         newGraphs = []
-        for chain in combinations:
-            for combination in chain:
-                if(combination not in visited):
-                    visited.add(combination)
-                    newGraph = self.connect(otherGraph, combination)
-                    if newGraph:
-                        newGraphs.append(newGraph)
+        for combination in combinations:
+            newGraph = self.connect(otherGraph, combination)
+            if newGraph:
+                newGraphs.append(newGraph)
 
-        # for newGraph in newGraphs:
-        #     newGraph.draw()
+        return newGraphs
 
     # connect two graphs
     # return new graph if connectionMap is exactly possible
@@ -225,6 +217,8 @@ class LoLaGraph:
 
     # return the node from the graph with nodeId
     def getNode(self, nodeId):
+        if nodeId is 27:
+            print("hoi")
         return self.graph.nodes()[nodeId]['node']
 
     # Update the nodeId to newId
@@ -308,6 +302,12 @@ class LoLaGraph:
 
     def getVertices(self):
         return [self.getNode(v) for v in self.graph.nodes() if type(self.getNode(v)) is LoLaVertex]
+
+    def getPremises(self):
+        return [v for v in self.getVertices() if v.getVertexType() is VertexType.Premise]
+
+    def getConclusions(self):
+        return [v for v in self.getVertices() if v.getVertexType() is VertexType.Conclusion]
 
     def getLinks(self):
         return [self.getNode(v) for v in self.graph.nodes() if type(self.getNode(v)) is LoLaLinkNode]
