@@ -2,7 +2,9 @@ from LoLaLinkNode import *
 import networkx as nx
 import itertools
 import matplotlib.pyplot as plt
+from unfold_vertex_functions import unfoldVertex
 from NodeFactory import *
+from LoLaDatatypes import *
 
 class LoLaGraph:
 
