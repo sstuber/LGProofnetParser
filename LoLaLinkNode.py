@@ -97,9 +97,9 @@ class LoLaVertex:
         self_vertex_type = self.getVertexType(graph)
         other_vertex_type = otherVertex.getVertexType(otherGraph)
 
-        return self.sequent is otherVertex.sequent and \
-               ((self_vertex_type is VertexType.Premise and other_vertex_type is VertexType.Conclusion) \
-                or (self_vertex_type is VertexType.Conclusion and other_vertex_type is VertexType.Premise))
+        return self.sequent == otherVertex.sequent and \
+               ((self_vertex_type == VertexType.Premise and other_vertex_type == VertexType.Conclusion) \
+                or (self_vertex_type == VertexType.Conclusion and other_vertex_type == VertexType.Premise))
 
      # returns a graph that unfolded from
     def unfoldVertex(self, graph, unfold_function, new_graph):

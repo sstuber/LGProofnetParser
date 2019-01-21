@@ -34,8 +34,6 @@ def ParseSequent(sequentString):
 
     match_tuple = re.match(MATCH_REGEX, sequentString).groups()
 
-    print(match_tuple)
-
     find_unary_result = find_unary(match_tuple, sequentString)
 
     if find_unary_result is not None:

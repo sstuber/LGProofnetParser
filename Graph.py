@@ -40,6 +40,11 @@ class LoLaGraph:
         for connection in connectionMap:
             v1 = self.getNode(connection[0])
             v2 = otherGraph.getNode(connection[1])
+            # if you are a sequent root, only connect if you stay a premise
+            if v1.is_sequent_root and v2.getVertexType(otherGraph) != VertexType.Premise:
+                return None
+            if v2.is_sequent_root and v1.getVertexType(self) != VertexType.Premise:
+                return None
             if not v1.canConnect(v2, self, otherGraph):
                 return None
 

@@ -13,69 +13,45 @@ class Prover:
         print("init prover")
 
     def prove(self, sentence, lexicon, targetType):
-
         words = sentence.lower().split()
         sequence_lists = map(lambda x: lexicon[x], words)
         unfolded_graphs = list(map(create_unfolded_graph_list_from_word, sequence_lists))
-
-        all_possible_graph_combinations = list(itertools.product(*unfolded_graphs))
-
-        g1 = LoLaGraph()
-        g2 = LoLaGraph()
-        g3 = LoLaGraph()
-
-        aap = g1.addNode(NODE_FACTORY.createVertex(g1, "np"))
-
-        l1 = g2.addNode(NODE_FACTORY.createLinkNode(g2))
-        l2 = g2.addNode(NODE_FACTORY.createLinkNode(g2))
-        n1 = g2.addNode(NODE_FACTORY.createVertex(g2, "(np\s)/np"))
-        n2 = g2.addNode(NODE_FACTORY.createVertex(g2, "np"))
-        n3 = g2.addNode(NODE_FACTORY.createVertex(g2, "np\s"))
-        n4 = g2.addNode(NODE_FACTORY.createVertex(g2, "np"))
-        n5 = g2.addNode(NODE_FACTORY.createVertex(g2, "s"))
-        g2.addEdge(l1, n1)
-        g2.addEdge(l1, n2)
-        g2.addEdge(n3, l1)
-        g2.addEdge(l2, n3)
-        g2.addEdge(l2, n4)
-        g2.addEdge(n5, l2)
-
-        g3.addNode(NODE_FACTORY.createVertex(g3, "np"))
-
-        unfoldedGraphs = [g1, g2, g3]
-
-        perms = list(itertools.permutations(unfoldedGraphs))
-
-        graphs = []
-        for perm in perms:
-            accumulatedGraphs = [perm[0]]
-            for i in range(1, len(perm)):
-                tmpGraphs = []
-                for aGraph in accumulatedGraphs:
-                    otherGraph = perm[i]
-                    tmpGraphs = tmpGraphs + aGraph.getPossibleConnections(otherGraph)
-                accumulatedGraphs = tmpGraphs
-            graphs = graphs + accumulatedGraphs
-
-        graphs = [g for g in graphs if len(g.getConclusions()) == 1 and g.getConclusions()[0].sequent == targetType]
-        #TODO: remove duplicate graphs and this line below
-        graphs = [graphs[0]]
-        # g1.draw()
-        # g2.draw()
-
-
-        # for g in graphs:
-        #     g.draw()
-
         derivations = []
-        while graphs:
-            graph = graphs.pop()
-            if graph.isTensorTree():
-                derivations.append(graph)
-                continue
+        lexiconCombinations = list(itertools.product(*unfolded_graphs))
+        for lexiconCombination in lexiconCombinations:
+            perms = list(itertools.permutations(lexiconCombination))
 
-            graphs = graphs + graph.getPossibleContractions()
-            graphs = graphs + graph.getPossibleRewritings()
+            graphs = []
+            for perm in perms:
+                accumulatedGraphs = [perm[0]]
+                for i in range(1, len(perm)):
+                    tmpGraphs = []
+                    for aGraph in accumulatedGraphs:
+                        otherGraph = perm[i]
+                        tmpGraphs = tmpGraphs + aGraph.getPossibleConnections(otherGraph)
+                    accumulatedGraphs = tmpGraphs
+                graphs = graphs + accumulatedGraphs
+
+            graphs = [g for g in graphs if len(g.getConclusions()) == 1 and g.getConclusions()[0].sequent == targetType]
+            # TODO: remove duplicate graphs and this line below
+            try:
+                graphs = [graphs[0]]
+            except:
+                pass
+            # g1.draw()
+            # g2.draw()
+
+            # for g in graphs:
+            #     g.draw()
+
+            while graphs:
+                graph = graphs.pop()
+                if graph.isTensorTree():
+                    derivations.append(graph)
+                    continue
+
+                graphs = graphs + graph.getPossibleContractions()
+                graphs = graphs + graph.getPossibleRewritings()
 
         for derivation in derivations:
             # return the proof term
@@ -107,8 +83,8 @@ def get_types_file_dict():
 
     return final_dict
 
-def add_word_to_dict(types_dict, word_sequence_list):
 
+def add_word_to_dict(types_dict, word_sequence_list):
     word_name = word_sequence_list[0]
     word_sequence = word_sequence_list[1]
 
@@ -120,10 +96,8 @@ def add_word_to_dict(types_dict, word_sequence_list):
 
 
 def create_unfolded_graph_list_from_word(sequence_list):
-
     graph_list = []
     for sequence in sequence_list:
-
         graph = LoLaGraph()
 
         lola_vertex = NODE_FACTORY.createVertex(graph, sequence)
@@ -136,4 +110,3 @@ def create_unfolded_graph_list_from_word(sequence_list):
         graph_list.append(graph)
 
     return graph_list
-
