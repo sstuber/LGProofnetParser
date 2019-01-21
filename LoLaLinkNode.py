@@ -81,8 +81,8 @@ class LoLaVertex:
         parents = self.graph.getParents(self.nodeId)
         children = self.graph.getChildren(self.nodeId)
 
-        if self.graph.node_count == 1:
-            return VertexType.Premise
+        if self.graph.node_count() == 1:
+            return VertexType.Conclusion
 
         if not parents:
             return VertexType.Premise

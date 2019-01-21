@@ -91,7 +91,7 @@ def unfold_premise_backwardslash(main_vertex, string_array, graph):
 
     graph.addNode(main_vertex)
 
-    a_node, b_node, link_node = get_binary_nodes(graph, string_array)
+    b_node, a_node, link_node = get_binary_nodes(graph, string_array)
 
     link_node.main = main_vertex
 
@@ -171,7 +171,7 @@ def unfold_conclusion_backwardslash(main_vertex, string_array, graph):
 
     graph.addNode(main_vertex)
 
-    a_node, b_node, link_node = get_binary_nodes(graph, string_array)
+    b_node, a_node, link_node = get_binary_nodes(graph, string_array)
 
     link_node.main = main_vertex
     link_node.type = LinkType.Par
@@ -215,9 +215,8 @@ def unfold_conclusion_diamond(main_vertex, string_array, graph):
     return graph
 
 
-# TODO note to self; conclusion moeten misschien de premisses zijn en andersom
-# premise zijn nu de [L] rules en conclusion de [R] rules
-
+# if something is a premise already it can only be a conclusion in the next unfold
+# if something is a conclusion already it can only b a premise in the next unfold
 def unfoldVertex(vertex_type, sequent_type, main_vertex, string_array, graph):
 
     current_unfold_function = unfold_functions[vertex_type][sequent_type]
@@ -231,7 +230,7 @@ def unfoldVertex(vertex_type, sequent_type, main_vertex, string_array, graph):
 # - graph.add_node(main_vertex)
 
 unfold_functions = {
-    VertexType.Premise: {
+    VertexType.Conclusion: {
         SequentType.SingleWord: no_operation,
         SequentType.Tensor: unfold_premise_tensor,
         SequentType.ForwardSlash: unfold_premise_forwardslash,
@@ -239,13 +238,13 @@ unfold_functions = {
         SequentType.Diamond: unfold_premise_diamond,
         SequentType.Square: unfold_premise_square
     },
-    VertexType.Conclusion: {
+    VertexType.Premise: {
         SequentType.SingleWord: no_operation,
         SequentType.Tensor: unfold_conclusion_tensor,
         SequentType.ForwardSlash: unfold_conclusion_forwardslash,
         SequentType.BackwardSlash: unfold_conclusion_backwardslash,
         SequentType.Diamond: unfold_conclusion_diamond,
-        SequentType.Square: unfold_conclusion_diamond
+        SequentType.Square: unfold_conclusion_square
     },
     VertexType.NotALeaf: {
         SequentType.SingleWord: no_operation,

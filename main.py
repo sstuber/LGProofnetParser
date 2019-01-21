@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
     graph = LoLaGraph()
 
-    graph.addNode(NODE_FACTORY.createVertex(graph, '((s/(diamond(square(np))))\(square(s/np)))/(s/diamond(square(np)))'))
+    graph.addNode(NODE_FACTORY.createVertex(graph, '(np\s)/np'))
 
     new_graph = graph.unfold_graph()
 
