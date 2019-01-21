@@ -47,7 +47,7 @@ class LoLaLinkNode:
             return self.nodeId == other
         return self.nodeId == other.nodeId
 
-    def getColor(self):
+    def getColor(self, graph):
         if self.type == LinkType.Tensor:
             return 'xkcd:light green'
         return 'xkcd:dark pink'
@@ -74,14 +74,14 @@ class LoLaVertex:
         return self.nodeId == other.nodeId
 
     def __str__(self):
-        return "%i: %s %s" % (self.nodeId, self.sequent, self.getVertexType())
+        return "%i: %s %s" % (self.nodeId, self.sequent)
 
     # return the vertex type. Calculate with the graph
-    def getVertexType(self):
-        parents = self.graph.getParents(self.nodeId)
-        children = self.graph.getChildren(self.nodeId)
+    def getVertexType(self, graph):
+        parents = graph.getParents(self.nodeId)
+        children = graph.getChildren(self.nodeId)
 
-        if self.graph.node_count() == 1:
+        if graph.node_count() == 1:
             return VertexType.Conclusion
 
         if not parents:
@@ -91,23 +91,27 @@ class LoLaVertex:
         return VertexType.NotALeaf
 
     # return whether two vertices can connect
-    def canConnect(self, other) -> bool:
-        self_vertex_type = self.getVertexType()
-        other_vertex_type = other.getVertexType()
+    def canConnect(self, otherVertex, graph, otherGraph) -> bool:
+        self_vertex_type = self.getVertexType(graph)
+        other_vertex_type = otherVertex.getVertexType(otherGraph)
 
-        return self.sequent is other.sequent and \
+        return self.sequent is otherVertex.sequent and \
                ((self_vertex_type is VertexType.Premise and other_vertex_type is VertexType.Conclusion) \
                 or (self_vertex_type is VertexType.Conclusion and other_vertex_type is VertexType.Premise))
 
      # returns a graph that unfolded from
-    def unfoldVertex(self, unfold_function, new_graph):
+    def unfoldVertex(self, graph, unfold_function, new_graph):
 
         sequent_type, string_array = ParseSequent(self.sequent)
-        vertex_type = self.getVertexType()
+        vertex_type = self.getVertexType(graph)
 
         changed_graph = unfold_function(vertex_type, sequent_type, self, string_array, new_graph)
 
         return changed_graph
 
-    def getColor(self):
-        return 'xkcd:sky blue'
+    def getColor(self, graph):
+        if self.getVertexType(graph) is VertexType.Premise:
+            return 'xkcd:orange'
+        if self.getVertexType(graph) is VertexType.Conclusion:
+            return 'xkcd:pale sky blue'
+        return 'xkcd:light mauve'

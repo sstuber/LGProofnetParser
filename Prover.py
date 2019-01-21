@@ -31,32 +31,26 @@ class Prover:
         g2.addEdge(l2, n4)
         g2.addEdge(n5, l2)
 
-        g3.addNode(NODE_FACTORY.createVertex(g3, "s"))
+        g3.addNode(NODE_FACTORY.createVertex(g3, "np"))
 
-        unfoldedGraphs = [g1,g2,g3]
+        unfoldedGraphs = [g1, g2, g3]
 
-        dingen = g1.getPossibleConnections(g2)
+        perms = list(itertools.permutations(unfoldedGraphs))
 
-        for ding in dingen:
-            ding.draw()
+        graphs = []
+        for perm in perms:
+            accumulatedGraphs = [perm[0]]
+            for i in range(1, len(perm)):
+                tmpGraphs = []
+                for aGraph in accumulatedGraphs:
+                    otherGraph = perm[i]
+                    tmpGraphs = tmpGraphs + aGraph.getPossibleConnections(otherGraph)
+                accumulatedGraphs = tmpGraphs
+            graphs = graphs + accumulatedGraphs
 
-
-
-        # unfolded = wordh.makevertexunfold
-        # Find all possible graphs obtained from connecting
-
-        # unfoldedGraphs = [1,2,3]
-        # perms = list(itertools.permutations(unfoldedGraphs))
-        #
-        # for perm in perms:
-        #     accumulatedGraphs = [perm[0]]
-        #     for i in range(1, len(perm)):
-        #         for aGraph in accumulatedGraphs:
-        #             otherGraph = perm[i]
-        #             aGraph.getPossibleConnections(otherGraph)
-
-
-
+        graphs = [g for g in graphs if len(g.getConclusions()) is 1 and g.getConclusions()[0].sequent is targetType]
+        for g in graphs:
+            g.draw()
         # derivations = []
         # while graphs:
         #     graph = graphs.pop()

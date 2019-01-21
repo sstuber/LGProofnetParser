@@ -40,7 +40,7 @@ class LoLaGraph:
         for connection in connectionMap:
             v1 = self.getNode(connection[0])
             v2 = otherGraph.getNode(connection[1])
-            if not v1.canConnect(v2):
+            if not v1.canConnect(v2, self, otherGraph):
                 return None
 
         newGraph = LoLaGraph(self)
@@ -66,7 +66,7 @@ class LoLaGraph:
     # Contract a graph at vertex and return resulting graph. return none if impossible.
     def contract(self, vertex):
         # first assert the H vertex is not a conclusion
-        if vertex.getVertexType() == VertexType.Conclusion:
+        if vertex.getVertexType(self) == VertexType.Conclusion:
             return None
         # this is the upper of two links
         upperLink = self.getNode(self.getChildren(vertex.nodeId)[0])
@@ -116,7 +116,7 @@ class LoLaGraph:
             return False
         if link.getLinkShape(self) is LinkShape.Upward:
             return False
-        if self.getNode(self.getChildren(link.nodeId)[0]).getVertexType() is VertexType.Conclusion:
+        if self.getNode(self.getChildren(link.nodeId)[0]).getVertexType(self) is VertexType.Conclusion:
             return False
 
         otherLink = self.getNode(self.getChildren(self.getChildren(link.nodeId)[0])[0])
@@ -199,7 +199,7 @@ class LoLaGraph:
         leaves = []
         for v in dict(self.graph.nodes()).values():
             node = v['node']
-            if(type(node) is LoLaVertex) and node.getVertexType() is not VertexType.NotALeaf:
+            if(type(node) is LoLaVertex) and node.getVertexType(self) is not VertexType.NotALeaf:
                 leaves.append(node)
         return leaves
 
@@ -268,7 +268,7 @@ class LoLaGraph:
             if (type(node) is LoLaVertex) and not node.is_unfolded:
                 all_nodes_unfolded = False
 
-                new_lola_graph = node.unfoldVertex(unfoldVertex, LoLaGraph())
+                new_lola_graph = node.unfoldVertex(self, unfoldVertex, LoLaGraph())
 
                 if new_lola_graph is not None:
                     self.graph = nx.compose(self.graph, new_lola_graph.graph)
@@ -304,10 +304,10 @@ class LoLaGraph:
         return [self.getNode(v) for v in self.graph.nodes() if type(self.getNode(v)) is LoLaVertex]
 
     def getPremises(self):
-        return [v for v in self.getVertices() if v.getVertexType() is VertexType.Premise]
+        return [v for v in self.getVertices() if v.getVertexType(self) is VertexType.Premise]
 
     def getConclusions(self):
-        return [v for v in self.getVertices() if v.getVertexType() is VertexType.Conclusion]
+        return [v for v in self.getVertices() if v.getVertexType(self) is VertexType.Conclusion]
 
     def getLinks(self):
         return [self.getNode(v) for v in self.graph.nodes() if type(self.getNode(v)) is LoLaLinkNode]
@@ -319,7 +319,7 @@ class LoLaGraph:
 
         for k, v in dict(self.graph.nodes()).items():
             node = v['node']
-            colors.append(node.getColor())
+            colors.append(node.getColor(self))
             if type(node) is LoLaVertex:
                 labels[node.nodeId] = str(node.nodeId) + " " + node.sequent
 
