@@ -26,6 +26,8 @@ if __name__ == '__main__':
     # new_graph.getNode(0)
     #
     # new_graph.draw()
+
+
     # print("begin main")
     #
     # print("begin test connection")
@@ -120,7 +122,7 @@ if __name__ == '__main__':
     print("begin test 'Kids love Super_Mario'")
     prover = Prover()
     sentence = "Kids love Super_Mario"
-    lexicon = {"kids":"np", "love":"(np\s)/np", "super_mario":"np"}
+    lexicon = get_types_file_dict()
     prover.prove(sentence, lexicon, "s")
     print("end test 'Kids love Super_Mario'")
 
