@@ -26,7 +26,7 @@ class LoLaGraph:
 
         newGraphs = []
         for combination in combinations:
-            newGraph = self.connect(otherGraph, combination)
+            newGraph = self.connect(otherGraph, list(combination))
             if newGraph:
                 newGraphs.append(newGraph)
 

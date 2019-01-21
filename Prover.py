@@ -38,7 +38,9 @@ class Prover:
         dingen = g1.getPossibleConnections(g2)
 
         for ding in dingen:
-            print("hoi")
+            ding.draw()
+
+
 
         # unfolded = wordh.makevertexunfold
         # Find all possible graphs obtained from connecting
