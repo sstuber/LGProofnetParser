@@ -24,6 +24,10 @@ def get_binary_nodes(graph, string_array):
 
     link_node: LoLaLinkNode = NODE_FACTORY.createLinkNode(graph)
 
+    graph.addNode(a_node)
+    graph.addNode(b_node)
+    graph.addNode(link_node)
+
     return a_node, b_node, link_node
 
 
@@ -33,6 +37,9 @@ def get_unary_nodes(graph, string_array):
 
     link_node: LoLaLinkNode = NODE_FACTORY.createLinkNode(graph)
     link_node.mode = LinkMode.Unary
+
+    graph.addNode(a_node)
+    graph.addNode(link_node)
 
     return a_node, link_node
 
@@ -49,6 +56,7 @@ def unfold_single_word(vertex: LoLaVertex, string_array):
 
 def unfold_premise_tensor(main_vertex: LoLaVertex, string_array) -> LoLaGraph:
     graph = LoLaGraph()
+    graph.addNode(main_vertex)
 
     a_node, b_node, link_node = get_binary_nodes(graph,string_array)
 
@@ -65,6 +73,7 @@ def unfold_premise_tensor(main_vertex: LoLaVertex, string_array) -> LoLaGraph:
 
 def unfold_premise_forwardslash(main_vertex:LoLaVertex, string_array):
     graph = LoLaGraph()
+    graph.addNode(main_vertex)
 
     a_node, b_node, link_node = get_binary_nodes(graph, string_array)
 
@@ -81,6 +90,7 @@ def unfold_premise_forwardslash(main_vertex:LoLaVertex, string_array):
 # since there is not yet a difference between right and left
 def unfold_premise_backwardslash(main_vertex, string_array):
     graph = LoLaGraph()
+    graph.addNode(main_vertex)
 
     a_node, b_node, link_node = get_binary_nodes(graph, string_array)
 
@@ -96,6 +106,7 @@ def unfold_premise_backwardslash(main_vertex, string_array):
 
 def unfold_premise_square(main_vertex, string_array):
     graph = LoLaGraph()
+    graph.addNode(main_vertex)
 
     a_node, link_node = get_unary_nodes(graph,string_array)
 
@@ -110,6 +121,7 @@ def unfold_premise_square(main_vertex, string_array):
 
 def unfold_premise_diamond(main_vertex, string_array):
     graph = LoLaGraph()
+    graph.addNode(main_vertex)
 
     a_node, link_node = get_unary_nodes(graph,string_array)
 
@@ -125,6 +137,7 @@ def unfold_premise_diamond(main_vertex, string_array):
 
 def unfold_conclusion_forwardslash(main_vertex, string_array):
     graph = LoLaGraph()
+    graph.addNode(main_vertex)
 
     a_node, b_node, link_node = get_binary_nodes(graph, string_array)
 
@@ -141,6 +154,7 @@ def unfold_conclusion_forwardslash(main_vertex, string_array):
 
 def unfold_conclusion_tensor(main_vertex, string_array):
     graph = LoLaGraph()
+    graph.addNode(main_vertex)
 
     a_node, b_node, link_node = get_binary_nodes(graph, string_array)
 
@@ -156,6 +170,7 @@ def unfold_conclusion_tensor(main_vertex, string_array):
 
 def unfold_conclusion_backwardslash(main_vertex, string_array):
     graph = LoLaGraph()
+    graph.addNode(main_vertex)
 
     a_node, b_node, link_node = get_binary_nodes(graph, string_array)
 
@@ -172,6 +187,7 @@ def unfold_conclusion_backwardslash(main_vertex, string_array):
 
 def unfold_conclusion_square(main_vertex, string_array):
     graph = LoLaGraph()
+    graph.addNode(main_vertex)
 
     a_node, link_node = get_unary_nodes(graph,string_array)
 
@@ -187,6 +203,7 @@ def unfold_conclusion_square(main_vertex, string_array):
 
 def unfold_conclusion_diamond(main_vertex, string_array):
     graph = LoLaGraph()
+    graph.addNode(main_vertex)
 
     a_node, link_node = get_unary_nodes(graph,string_array)
 
