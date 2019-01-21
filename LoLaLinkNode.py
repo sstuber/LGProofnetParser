@@ -81,6 +81,9 @@ class LoLaVertex:
         parents = self.graph.getParents(self.nodeId)
         children = self.graph.getChildren(self.nodeId)
 
+        if self.graph.node_count == 1:
+            return VertexType.Premise
+
         if not parents:
             return VertexType.Premise
         if not children:
@@ -97,7 +100,7 @@ class LoLaVertex:
                 or (self_vertex_type is VertexType.Conclusion and other_vertex_type is VertexType.Premise))
 
      # returns a graph that unfolded from
-    def unfoldVertex(self, unfold_function, new_graph ):
+    def unfoldVertex(self, unfold_function, new_graph):
 
         sequent_type, string_array = ParseSequent(self.sequent)
         vertex_type = self.getVertexType()

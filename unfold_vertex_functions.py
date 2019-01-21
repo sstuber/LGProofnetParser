@@ -10,7 +10,7 @@ a_sequent_id = 1
 b_sequent_id = 2
 
 
-def no_operation(main_vertex, string_array):
+def no_operation(main_vertex, string_array, graph):
     main_vertex.is_unfolded = True
     return None
 
@@ -225,6 +225,10 @@ def unfoldVertex(vertex_type, sequent_type, main_vertex, string_array, graph):
     unfolded_graph = current_unfold_function(main_vertex, string_array, graph)
     return unfolded_graph
 
+
+# a functions has to contain
+# - main_vertex.is_unfolded = true
+# - graph.add_node(main_vertex)
 
 unfold_functions = {
     VertexType.Premise: {

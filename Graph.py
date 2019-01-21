@@ -186,6 +186,10 @@ class LoLaGraph:
             newGraph.addEdge(w, newOtherLink)
         return newGraph
 
+    def node_count(self):
+        return len(dict(self.graph.nodes()).values())
+
+
     # acyclic, connected, without cotensor links
     def isTensorTree(self):
         if not nx.is_connected(self.graph):
@@ -260,6 +264,25 @@ class LoLaGraph:
             if parentId is otherNode:
                 parentId = joinedNode.nodeId
             self.graph.add_edge(joinedNode.nodeId, neighborId, parent=parentId)
+
+    def unfold_graph(self):
+        all_nodes_unfolded = True
+
+        for v in dict(self.graph.nodes()).values():
+            node = v['node']
+
+            if (type(node) is LoLaVertex) and not node.is_unfolded:
+                all_nodes_unfolded = False
+
+                new_lola_graph = node.unfoldVertex(unfoldVertex, LoLaGraph())
+
+                if new_lola_graph is not None:
+                    self.graph = nx.compose(self.graph, new_lola_graph.graph)
+
+        if all_nodes_unfolded:
+            return self
+
+        return self.unfold_graph()
 
 
     #TODO: ensure left first
