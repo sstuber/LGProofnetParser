@@ -123,7 +123,11 @@ def create_unfolded_graph_list_from_word(sequence_list):
     for sequence in sequence_list:
 
         graph = LoLaGraph()
-        graph.addNode(NODE_FACTORY.createVertex(graph, sequence))
+
+        lola_vertex = NODE_FACTORY.createVertex(graph, sequence)
+        lola_vertex.is_sequent_root = True
+
+        graph.addNode(lola_vertex)
 
         graph = graph.unfold_graph()
 

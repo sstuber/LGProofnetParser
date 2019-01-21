@@ -62,6 +62,8 @@ class LoLaVertex:
 
         self.is_unfolded: bool = False
 
+        self.is_sequent_root = False
+
         # lola graph
         self.graph = graph
 
