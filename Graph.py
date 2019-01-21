@@ -210,11 +210,12 @@ class LoLaGraph:
         self.graph.add_node(node.nodeId, node=node)
         return node
 
-    def addEdge(self,child, parent):
-        self.graph.add_edge(child.nodeId, parent.nodeId, parent=parent.nodeId)
+    def addEdge(self, child=None, parent=None, child_id=None, parent_id=None):
+        if child is not None and parent is not None:
+            self.graph.add_edge(child.nodeId, parent.nodeId, parent=parent.nodeId)
 
-    def addEdge(self,child: int, parent: int):
-        self.graph.add_edge(child, parent, parent=parent)
+        if child_id is not None and parent_id is not None:
+            self.graph.add_edge(child_id, parent_id, parent=parent)
 
     # return the node from the graph with nodeId
     def getNode(self, nodeId):

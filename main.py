@@ -73,12 +73,12 @@ if __name__ == '__main__':
     g3.addNode(NODE_FACTORY.createVertex(g3, "y")) #18
     g3.addNode(NODE_FACTORY.createVertex(g3, "z")) #19
 
-    g3.addEdge(14, 16)
-    g3.addEdge(14, 17)
-    g3.addEdge(18, 14)
-    g3.addEdge(15, 18)
-    g3.addEdge(17, 15)
-    g3.addEdge(19, 15)
+    g3.addEdge(child_id=14, parent_id=16)
+    g3.addEdge(child_id=14, parent_id=17)
+    g3.addEdge(child_id=18, parent_id=14)
+    g3.addEdge(child_id=15, parent_id=18)
+    g3.addEdge(child_id=17, parent_id=15)
+    g3.addEdge(child_id=19, parent_id=15)
 
     contractions = g3.getPossibleContractions()
 
@@ -91,18 +91,18 @@ if __name__ == '__main__':
     g4.addNode(NODE_FACTORY.createLinkNode(g4)) #21
     g4.addNode(NODE_FACTORY.createLinkNode(g4)) #22
 
-    g4.addNode(NODE_FACTORY.createVertex(g4, "x")) #23
     g4.addNode(NODE_FACTORY.createVertex(g4, "y")) #24
+    g4.addNode(NODE_FACTORY.createVertex(g4, "x")) #23
     g4.addNode(NODE_FACTORY.createVertex(g4, "u")) #25
     g4.addNode(NODE_FACTORY.createVertex(g4, "v")) #26
     g4.addNode(NODE_FACTORY.createVertex(g4, "w")) #27
 
-    g4.addEdge(21, 23)
-    g4.addEdge(21, 24)
-    g4.addEdge(25, 21)
-    g4.addEdge(22, 25)
-    g4.addEdge(26, 22)
-    g4.addEdge(27, 22)
+    g4.addEdge(child_id=21, parent_id=23)
+    g4.addEdge(child_id=21, parent_id=24)
+    g4.addEdge(child_id=25, parent_id=21)
+    g4.addEdge(child_id=22, parent_id=25)
+    g4.addEdge(child_id=26, parent_id=22)
+    g4.addEdge(child_id=27, parent_id=22)
 
     rewritings = g4.getPossibleRewritings()
 
