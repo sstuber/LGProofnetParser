@@ -330,7 +330,9 @@ class LoLaGraph:
         # get the adj of the otherNode
         otherNodeAdj = self.graph.adj[otherNode]
         # create the union of both nodes
-        joinedNode = self.addNode(NODE_FACTORY.createVertex(self, "x"))
+        joinedNode = self.addNode(NODE_FACTORY.createVertex(self, otherNode.sequent))
+        joinedNode.from_target_type = otherNode.from_target_type
+        joinedNode.is_sequent_root = otherNode.is_sequent_root
         # remove the nodes from the graph
         self.graph.remove_node(node)
         self.graph.remove_node(otherNode)

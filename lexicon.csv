@@ -5,3 +5,6 @@ love,(np\s)/np
 love,np\(s/np)
 parents,np
 super_mario,np
+test,np/(s\(square(np)))
+bob,np
+leukwoord,(s/(np\s))\s
