@@ -13,7 +13,6 @@ class VertexType(Enum):
             return VertexType.Premise
         return "invalid parameter in OppositeLeafType"
 
-
 class LinkType(Enum):
     Tensor = 'tensor'
     Par = 'Par'
@@ -27,3 +26,8 @@ class LinkShape(Enum):
 class LinkMode(Enum):
     Unary = 'unary'
     Binary = 'binary'
+
+class EdgeAlignment(Enum):
+    Left = 'left'
+    Right = 'right'
+    Straight = 'straight'
