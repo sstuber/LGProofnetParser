@@ -223,78 +223,129 @@ class LoLaGraph:
 
         return rewritings
 
-    # Rewrite a graph at vertex and return resulting graph. return none if impossible.
-    def rewrite(self, link):
-        # NOTE: contractions only happen to tensor links connected as > · <
-        if link.type is LinkType.Par:
+
+    def rewrite(self, upperLink):
+        # the upper link is unary and a tensor
+        if upperLink.mode is not LinkMode.Unary or upperLink.type is not LinkType.Tensor:
             return False
-        if link.getLinkShape(self) is LinkShape.Upward:
+        # try to get the descendants of upper link. could fail if too close to a conclusion vertex
+        try:
+            # the middle link is binary, pointing down, a tensor and the grandchild of upper link
+            middleLink = self.getNode(self.getChildren(self.getChildren(upperLink.nodeId)[0])[0])
+            if middleLink.mode is not LinkMode.Binary or middleLink.shape is not LinkShape.Downward:
+                return False
+            # the lower link is binary, pointing down, a tensor and the grandchild of middle link
+            lowerLink = self.getNode(self.getChildren(self.getChildren(middleLink.nodeId)[0])[0])
+            if lowerLink.mode is not LinkMode.Binary or lowerLink.shape is not LinkShape.Downward:
+                return False
+        except:
             return False
-        if self.getNode(self.getChildren(link.nodeId)[0]).getVertexType(self) is VertexType.Conclusion:
-            return False
 
-        otherLink = self.getNode(self.getChildren(self.getChildren(link.nodeId)[0])[0])
-
-        if otherLink.type is LinkType.Par:
-            return False
-        if otherLink.getLinkShape(self) is LinkShape.Downward:
-            return False
-
-        # We are now certain that we are dealing with > · < tensor links
-        # There are 4 possible structural rewrites
-        # in each rewrite, the tensor changes shape
-
-        x, y = self.getParents(link.nodeId)
-        u = link.getSharedVertices(otherLink, self)[0]
-        v, w = self.getChildren(otherLink.nodeId)
-
-        return [self.applyStructuralRule(link, otherLink, x, y, u, v, w, 0),
-                self.applyStructuralRule(link, otherLink, x, y, u, v, w, 1),
-                self.applyStructuralRule(link, otherLink, x, y, u, v, w, 2),
-                self.applyStructuralRule(link, otherLink, x, y, u, v, w, 3)]
-
-    # apply structural rule to rewrite graph
-    def applyStructuralRule(self, link, otherLink, x, y, u, v, w, rule):
         newGraph = self.copy()
-        newGraph.graph.remove_node(link)
-        newGraph.graph.remove_node(otherLink)
-        newLink = newGraph.addNode(NODE_FACTORY.createLinkNode(self))
-        newOtherLink = newGraph.addNode(NODE_FACTORY.createLinkNode(self))
-        x = self.getNode(x)
-        y = self.getNode(y)
-        u = self.getNode(u)
-        v = self.getNode(v)
-        w = self.getNode(w)
 
-        if rule is 0:
-            newGraph.addEdge(newLink, x)
-            newGraph.addEdge(v, newLink)
-            newGraph.addEdge(u, newLink)
-            newGraph.addEdge(newOtherLink, u)
-            newGraph.addEdge(newOtherLink, y)
-            newGraph.addEdge(w, newOtherLink)
-        elif rule is 1:
-            newGraph.addEdge(newLink, x)
-            newGraph.addEdge(v, newLink)
-            newGraph.addEdge(newLink, u)
-            newGraph.addEdge(u, newOtherLink)
-            newGraph.addEdge(newOtherLink, y)
-            newGraph.addEdge(w, newOtherLink)
-        elif rule is 2:
-            newGraph.addEdge(newLink, x)
-            newGraph.addEdge(u, newLink)
-            newGraph.addEdge(w, newLink)
-            newGraph.addEdge(newOtherLink, u)
-            newGraph.addEdge(newOtherLink, y)
-            newGraph.addEdge(v, newOtherLink)
-        elif rule is 3:
-            newGraph.addEdge(newLink, y)
-            newGraph.addEdge(v, newLink)
-            newGraph.addEdge(u, newLink)
-            newGraph.addEdge(newOtherLink, x)
-            newGraph.addEdge(newOtherLink, u)
-            newGraph.addEdge(w, newOtherLink)
+        sharedUpperMiddle = upperLink.getSharedVertices(middleLink, newGraph)
+        sharedMiddleLower = middleLink.getSharedVertices(lowerLink, newGraph)
+        # h1 is the parent of the lower link that is not shared with the middle link
+        h1 = newGraph.getNode([v for v in newGraph.getParents(lowerLink.nodeId) if v not in sharedMiddleLower][0])
+        # h2 is the parent of the middle link that is not shared with upper link
+        h2 = newGraph.getNode([v for v in newGraph.getParents(middleLink.nodeId) if v not in sharedUpperMiddle][0])
+        # h3 is the parent of the upper link
+        h3 = newGraph.getNode(newGraph.getParents(upperLink.nodeId)[0])
+        # h4 is the child of the upper link
+        h4 = newGraph.getNode(newGraph.getChildren(upperLink.nodeId)[0])
+        # h5 is the shared vertex between the lower link and the middle link
+        h5 = newGraph.getNode(sharedMiddleLower[0])
+
+        newGraph.graph.remove_edge(lowerLink.nodeId, h1.nodeId)
+        newGraph.graph.remove_edge(lowerLink.nodeId, h5.nodeId)
+        newGraph.graph.remove_edge(middleLink.nodeId, h2.nodeId)
+        newGraph.graph.remove_edge(middleLink.nodeId, h4.nodeId)
+        newGraph.graph.remove_edge(middleLink.nodeId, h5.nodeId)
+        newGraph.graph.remove_edge(upperLink.nodeId, h3.nodeId)
+        newGraph.graph.remove_edge(upperLink.nodeId, h4.nodeId)
+
+        newGraph.addEdge(lowerLink, h4, alignment=EdgeAlignment.Right)
+        newGraph.addEdge(lowerLink, h5, alignment=EdgeAlignment.Left)
+        newGraph.addEdge(middleLink, h1, alignment=EdgeAlignment.Left)
+        newGraph.addEdge(middleLink, h2, alignment=EdgeAlignment.Right)
+        newGraph.addEdge(h5, middleLink, alignment=EdgeAlignment.Straight)
+        newGraph.addEdge(upperLink, h3, alignment=EdgeAlignment.Straight)
+        newGraph.addEdge(h4, upperLink, alignment=EdgeAlignment.Straight)
+
         return newGraph
+
+    # # Rewrite a graph at vertex and return resulting graph. return none if impossible.
+    # def rewrite(self, link):
+    #     # NOTE: contractions only happen to tensor links connected as > · <
+    #     if link.type is LinkType.Par:
+    #         return False
+    #     if link.getLinkShape(self) is LinkShape.Upward:
+    #         return False
+    #     if self.getNode(self.getChildren(link.nodeId)[0]).getVertexType(self) is VertexType.Conclusion:
+    #         return False
+    #
+    #     otherLink = self.getNode(self.getChildren(self.getChildren(link.nodeId)[0])[0])
+    #
+    #     if otherLink.type is LinkType.Par:
+    #         return False
+    #     if otherLink.getLinkShape(self) is LinkShape.Downward:
+    #         return False
+    #
+    #     # We are now certain that we are dealing with > · < tensor links
+    #     # There are 4 possible structural rewrites
+    #     # in each rewrite, the tensor changes shape
+    #
+    #     x, y = self.getParents(link.nodeId)
+    #     u = link.getSharedVertices(otherLink, self)[0]
+    #     v, w = self.getChildren(otherLink.nodeId)
+    #
+    #     return [self.applyStructuralRule(link, otherLink, x, y, u, v, w, 0),
+    #             self.applyStructuralRule(link, otherLink, x, y, u, v, w, 1),
+    #             self.applyStructuralRule(link, otherLink, x, y, u, v, w, 2),
+    #             self.applyStructuralRule(link, otherLink, x, y, u, v, w, 3)]
+    #
+    # # apply structural rule to rewrite graph
+    # def applyStructuralRule(self, link, otherLink, x, y, u, v, w, rule):
+    #     newGraph = self.copy()
+    #     newGraph.graph.remove_node(link)
+    #     newGraph.graph.remove_node(otherLink)
+    #     newLink = newGraph.addNode(NODE_FACTORY.createLinkNode(self))
+    #     newOtherLink = newGraph.addNode(NODE_FACTORY.createLinkNode(self))
+    #     x = self.getNode(x)
+    #     y = self.getNode(y)
+    #     u = self.getNode(u)
+    #     v = self.getNode(v)
+    #     w = self.getNode(w)
+    #
+    #     if rule is 0:
+    #         newGraph.addEdge(newLink, x)
+    #         newGraph.addEdge(v, newLink)
+    #         newGraph.addEdge(u, newLink)
+    #         newGraph.addEdge(newOtherLink, u)
+    #         newGraph.addEdge(newOtherLink, y)
+    #         newGraph.addEdge(w, newOtherLink)
+    #     elif rule is 1:
+    #         newGraph.addEdge(newLink, x)
+    #         newGraph.addEdge(v, newLink)
+    #         newGraph.addEdge(newLink, u)
+    #         newGraph.addEdge(u, newOtherLink)
+    #         newGraph.addEdge(newOtherLink, y)
+    #         newGraph.addEdge(w, newOtherLink)
+    #     elif rule is 2:
+    #         newGraph.addEdge(newLink, x)
+    #         newGraph.addEdge(u, newLink)
+    #         newGraph.addEdge(w, newLink)
+    #         newGraph.addEdge(newOtherLink, u)
+    #         newGraph.addEdge(newOtherLink, y)
+    #         newGraph.addEdge(v, newOtherLink)
+    #     elif rule is 3:
+    #         newGraph.addEdge(newLink, y)
+    #         newGraph.addEdge(v, newLink)
+    #         newGraph.addEdge(u, newLink)
+    #         newGraph.addEdge(newOtherLink, x)
+    #         newGraph.addEdge(newOtherLink, u)
+    #         newGraph.addEdge(w, newOtherLink)
+    #     return newGraph
 
     def node_count(self):
         return len(dict(self.graph.nodes()).values())
