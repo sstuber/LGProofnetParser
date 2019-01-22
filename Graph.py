@@ -201,7 +201,7 @@ class LoLaGraph:
                     main_edge_id = edge_dict['main_edge']
 
                     # and check of the edge the main edge is
-                    if main_edge_id is not None and main_edge_id != in_between_vertex_id:
+                    if main_edge_id is not None and main_edge_id == in_between_vertex_id:
                         return None
 
         if downLink.type == LinkType.Par:
@@ -212,7 +212,7 @@ class LoLaGraph:
                     main_edge_id = edge_dict['main_edge']
 
                     # and check of the edge the main edge is
-                    if main_edge_id is not None and main_edge_id != in_between_vertex_id:
+                    if main_edge_id is not None and main_edge_id == in_between_vertex_id:
                         return None
 
         sharedVertices = upperLink.getSharedVertices(downLink, self)
@@ -226,8 +226,7 @@ class LoLaGraph:
         conclusion = [v for v in self.getChildren(downLink.nodeId) if v not in sharedVertices][0]
 
         # remove the two links and the shared vertices
-        newGraph = LoLaGraph(self)
-        newGraph.graph = self.graph.copy()
+        newGraph = self.copy()
 
         newGraph.graph.remove_node(upperLink)
         newGraph.graph.remove_node(downLink)
@@ -236,9 +235,6 @@ class LoLaGraph:
         newGraph.joinVertices(vertex, conclusion)
 
         return newGraph
-
-
-        return None
 
     # Contract a graph at vertex and return resulting graph. return none if impossible.
     def contractBinary(self, vertex, upperLink):
