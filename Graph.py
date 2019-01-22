@@ -184,12 +184,58 @@ class LoLaGraph:
         except:
             return None
 
+        if downLink.mode is LinkMode.Binary:
+            return None
+
         # the links must be a different type
         if upperLink.type == downLink.type:
             return None
 
-        if upperLink.type == LinkType.Par :
+        # if a linknode is par check of the main vertex is not the in between the link nodes
+        if upperLink.type == LinkType.Par:
+
+            adj = self.graph.adj[upperLink.nodeId]
+            # for each edge check if the neighbour is the inbetween vertex
+            for neighbourid, edge_dict in adj.items():
+                if neighbourid == in_between_vertex_id:
+                    main_edge_id = edge_dict['main_edge']
+
+                    # and check of the edge the main edge is
+                    if main_edge_id is not None and main_edge_id != in_between_vertex_id:
+                        return None
+
+        if downLink.type == LinkType.Par:
+            adj = self.graph.adj[downLink.nodeId]
+            # for each edge check if the neighbour is the inbetween vertex
+            for neighbourid, edge_dict in adj.items():
+                if neighbourid == in_between_vertex_id:
+                    main_edge_id = edge_dict['main_edge']
+
+                    # and check of the edge the main edge is
+                    if main_edge_id is not None and main_edge_id != in_between_vertex_id:
+                        return None
+
+        sharedVertices = upperLink.getSharedVertices(downLink, self)
+        if len(sharedVertices) != 1:
             return None
+        # the shared vertices may not include the hypothesis
+        if vertex.nodeId in sharedVertices:
+            return None
+
+        # the conclusion is the child of the remaining link that is not in shared vertices
+        conclusion = [v for v in self.getChildren(downLink.nodeId) if v not in sharedVertices][0]
+
+        # remove the two links and the shared vertices
+        newGraph = LoLaGraph(self)
+        newGraph.graph = self.graph.copy()
+
+        newGraph.graph.remove_node(upperLink)
+        newGraph.graph.remove_node(downLink)
+        newGraph.graph.remove_nodes_from(sharedVertices)
+
+        newGraph.joinVertices(vertex, conclusion)
+
+        return newGraph
 
 
         return None
