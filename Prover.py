@@ -14,52 +14,52 @@ class Prover:
 
     def prove(self, sentence, lexicon, targetType):
         words = sentence.lower().split()
-        sequence_lists = map(lambda x: lexicon[x], words)
+        sequence_lists = map(lambda x: (lexicon[x], x), words)
         unfolded_graphs = list(map(create_unfolded_graph_list_from_word, sequence_lists))
         derivations = []
         lexicalCombinations = list(itertools.product(*unfolded_graphs))
 
 
-        g1 = LoLaGraph()
-        g2 = LoLaGraph()
-
-        l1 = g1.addNode(NODE_FACTORY.createLinkNode(g1))
-        l2 = g1.addNode(NODE_FACTORY.createLinkNode(g1))
-        l2.type = LinkType.Par
-
-        n1 = g1.addNode(NODE_FACTORY.createVertex(g1, "s"))
-        n2 = g1.addNode(NODE_FACTORY.createVertex(g1, "sos"))
-        n3 = g1.addNode(NODE_FACTORY.createVertex(g1, "s"))
-        n4 = g1.addNode(NODE_FACTORY.createVertex(g1, "sosonp"))
-        n5 = g1.addNode(NODE_FACTORY.createVertex(g1, "np"))
-
-        g1.addEdge(l1, n1)
-        g1.addEdge(n2, l1)
-        g1.addEdge(n3, l1)
-        g1.addEdge(l2, n2)
-        g1.addEdge(l2, n4)
-        g1.addEdge(n5, l2)
-
-        l3 = g2.addNode(NODE_FACTORY.createLinkNode(g2))
-        l4 = g2.addNode(NODE_FACTORY.createLinkNode(g2))
-        l3.type = LinkType.Par
-
-        n6 = g2.addNode(NODE_FACTORY.createVertex(g2, "s"))
-        n7 = g2.addNode(NODE_FACTORY.createVertex(g2, "snps"))
-        n8 = g2.addNode(NODE_FACTORY.createVertex(g2, "nps"))
-        n9 = g2.addNode(NODE_FACTORY.createVertex(g2, "np"))
-        n10 = g2.addNode(NODE_FACTORY.createVertex(g2, "s"))
-
-        g2.addEdge(l3, n6)
-        g2.addEdge(n7, l3)
-        g2.addEdge(n8, l3)
-        g2.addEdge(l4, n9)
-        g2.addEdge(l4, n8)
-        g2.addEdge(n10, l4)
-
-        lexicalCombinations = [[g1, g2]]
-
-        targetType = "snps"
+        # g1 = LoLaGraph()
+        # g2 = LoLaGraph()
+        #
+        # l1 = g1.addNode(NODE_FACTORY.createLinkNode(g1))
+        # l2 = g1.addNode(NODE_FACTORY.createLinkNode(g1))
+        # l2.type = LinkType.Par
+        #
+        # n1 = g1.addNode(NODE_FACTORY.createVertex(g1, "s"))
+        # n2 = g1.addNode(NODE_FACTORY.createVertex(g1, "sos"))
+        # n3 = g1.addNode(NODE_FACTORY.createVertex(g1, "s"))
+        # n4 = g1.addNode(NODE_FACTORY.createVertex(g1, "sosonp"))
+        # n5 = g1.addNode(NODE_FACTORY.createVertex(g1, "np"))
+        #
+        # g1.addEdge(l1, n1)
+        # g1.addEdge(n2, l1)
+        # g1.addEdge(n3, l1)
+        # g1.addEdge(l2, n2)
+        # g1.addEdge(l2, n4)
+        # g1.addEdge(n5, l2)
+        #
+        # l3 = g2.addNode(NODE_FACTORY.createLinkNode(g2))
+        # l4 = g2.addNode(NODE_FACTORY.createLinkNode(g2))
+        # l3.type = LinkType.Par
+        #
+        # n6 = g2.addNode(NODE_FACTORY.createVertex(g2, "s"))
+        # n7 = g2.addNode(NODE_FACTORY.createVertex(g2, "snps"))
+        # n8 = g2.addNode(NODE_FACTORY.createVertex(g2, "nps"))
+        # n9 = g2.addNode(NODE_FACTORY.createVertex(g2, "np"))
+        # n10 = g2.addNode(NODE_FACTORY.createVertex(g2, "s"))
+        #
+        # g2.addEdge(l3, n6)
+        # g2.addEdge(n7, l3)
+        # g2.addEdge(n8, l3)
+        # g2.addEdge(l4, n9)
+        # g2.addEdge(l4, n8)
+        # g2.addEdge(n10, l4)
+        #
+        # lexicalCombinations = [[g1, g2]]
+        #
+        # targetType = "snps"
 
         for lexicalCombination in lexicalCombinations:
             perms = list(itertools.permutations(lexicalCombination))
@@ -82,8 +82,7 @@ class Prover:
             except:
                 pass
 
-            # graphs[0].draw()
-
+            graphs[0].hasCorrectWordOrder(sentence)
 
             while graphs:
                 graph = graphs.pop()
@@ -96,7 +95,6 @@ class Prover:
 
         for derivation in derivations:
             # return the proof term
-            derivation.draw()
             print("ik ben een derivation")
 
     def buildGraph(self):
@@ -137,14 +135,16 @@ def add_word_to_dict(types_dict, word_sequence_list):
     return types_dict
 
 
-def create_unfolded_graph_list_from_word(sequence_list):
+def create_unfolded_graph_list_from_word(sequence_list_tuple):
     graph_list = []
+
+    sequence_list, word = sequence_list_tuple
     for sequence in sequence_list:
         graph = LoLaGraph()
 
         lola_vertex = NODE_FACTORY.createVertex(graph, sequence)
         lola_vertex.is_sequent_root = True
-
+        lola_vertex.word = word
         graph.addNode(lola_vertex)
 
         graph = graph.unfold_graph()

@@ -64,6 +64,8 @@ class LoLaVertex:
 
         self.is_sequent_root = False
 
+        self.word = ""
+
         # lola graph
         self.graph = graph
 

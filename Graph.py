@@ -12,6 +12,40 @@ class LoLaGraph:
         self.parentGraph = parent_graph
         self.graph = nx.Graph()
 
+    # Get the words in a graph from left to right
+    def getOrderedPremises(self):
+        # DFS starting at conclusion, traversing left-first
+        stack = [self.getConclusions()[0]]
+        discovered = set()
+        premises = []
+        while stack:
+            node = stack.pop()
+            if node not in discovered:
+                discovered.add(node)
+                adj = self.graph.adj[node.nodeId]
+                # if adj has edge where edge.alignment is EdgeAlignment.Right
+                # append node
+                right = [x for x in adj if adj[x]['alignment'] is EdgeAlignment.Right]
+                straight = [x for x in adj if adj[x]['alignment'] is EdgeAlignment.Straight]
+                left = [x for x in adj if adj[x]['alignment'] is EdgeAlignment.Left]
+
+                if right:
+                    stack.append(self.getNode(right[0]))
+                if straight:
+                    stack.append(self.getNode(straight[0]))
+                if left:
+                    stack.append(self.getNode(left[0]))
+
+                if type(node) is LoLaVertex and node.getVertexType(self) is VertexType.Premise:
+                    premises.append(node)
+
+        return premises
+
+    # Check if the word order in the graph corresponds to the input sentence
+    def hasCorrectWordOrder(self, sentence):
+        premiseOrder = list(map(lambda x: x.word, self.getOrderedPremises()))
+        return sentence.lower() == " ".join(premiseOrder)
+
     # return list of new graphs that can be created from connecting with otherGraph
     def getPossibleConnections(self, otherGraph):
 
@@ -95,14 +129,24 @@ class LoLaGraph:
 
         return contractions
 
-    # Contract a graph at vertex and return resulting graph. return none if impossible.
     def contract(self, vertex):
         # first assert the H vertex is not a conclusion
         if vertex.getVertexType(self) == VertexType.Conclusion:
             return None
         # this is the upper of two links
+        upperLink = self.getNode(self.getChildren(vertex.nodeId)[0])
+        if upperLink.mode is LinkMode.Binary:
+            return self.contractBinary(vertex, upperLink)
+        else:
+            return self.contractUnary(vertex, upperLink)
+
+
+    def contractUnary(self, vertex, upperLink):
+        return None
+
+    # Contract a graph at vertex and return resulting graph. return none if impossible.
+    def contractBinary(self, vertex, upperLink):
         try:
-            upperLink = self.getNode(self.getChildren(vertex.nodeId)[0])
             downLink = self.getNode(self.getChildren(self.getChildren(upperLink.nodeId)[0])[0])
         except:
             return None
@@ -274,9 +318,10 @@ class LoLaGraph:
         # restore the edges
         for neighborId, v in adj.items():
             parentId = v['parent']
+            alignment = v['alignment']
             if parentId is nodeId:
                 parentId = newId
-            self.graph.add_edge(newId, neighborId, parent=parentId)
+            self.graph.add_edge(newId, neighborId, parent=parentId, alignment=alignment)
 
     # combine two vertices into one (after contraction)
     def joinVertices(self, node, otherNode):
