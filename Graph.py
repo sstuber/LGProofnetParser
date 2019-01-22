@@ -176,6 +176,22 @@ class LoLaGraph:
 
 
     def contractUnary(self, vertex, upperLink):
+
+        in_between_vertex_id = self.getChildren(upperLink.nodeId)[0]
+
+        try:
+            downLink = self.getNode(self.getChildren(in_between_vertex_id)[0])
+        except:
+            return None
+
+        # the links must be a different type
+        if upperLink.type == downLink.type:
+            return None
+
+        if upperLink.type == LinkType.Par :
+            return None
+
+
         return None
 
     # Contract a graph at vertex and return resulting graph. return none if impossible.
@@ -379,12 +395,12 @@ class LoLaGraph:
         self.graph.add_node(node.nodeId, node=node)
         return node
 
-    def addEdge(self, child=None, parent=None, child_id=None, parent_id=None, alignment=None):
+    def addEdge(self, child=None, parent=None, child_id=None, parent_id=None, alignment=None, main_edge=None):
         if child is not None and parent is not None:
-            self.graph.add_edge(child.nodeId, parent.nodeId, parent=parent.nodeId, alignment=alignment)
+            self.graph.add_edge(child.nodeId, parent.nodeId, parent=parent.nodeId, alignment=alignment, main_edge=main_edge)
 
         if child_id is not None and parent_id is not None:
-            self.graph.add_edge(child_id, parent_id, parent=parent, alignment=alignment)
+            self.graph.add_edge(child_id, parent_id, parent=parent, alignment=alignment, main_edge=main_edge)
 
     # return the node from the graph with nodeId
     def getNode(self, nodeId):
@@ -402,9 +418,13 @@ class LoLaGraph:
         for neighborId, v in adj.items():
             parentId = v['parent']
             alignment = v['alignment']
-            if parentId is nodeId:
+            main_edge_id = v['main_edge']
+            if main_edge_id is not None and main_edge_id == nodeId:
+                main_edge_id = newId
+
+            if parentId == nodeId:
                 parentId = newId
-            self.graph.add_edge(newId, neighborId, parent=parentId, alignment=alignment)
+            self.graph.add_edge(newId, neighborId, parent=parentId, alignment=alignment, main_edge=main_edge_id)
 
     # combine two vertices into one (after contraction)
     def joinVertices(self, node, otherNode):
@@ -422,14 +442,22 @@ class LoLaGraph:
         # restore the edges
         for neighborId, v in nodeAdj.items():
             parentId = v['parent']
+            alignment = v['alignment']
+            main_edge_id = v['main_edge']
+            if main_edge_id is not None and main_edge_id == node:
+                main_edge_id = joinedNode.nodeId
             if parentId is node:
                 parentId = joinedNode.nodeId
-            self.graph.add_edge(joinedNode.nodeId, neighborId, parent=parentId)
+            self.graph.add_edge(joinedNode.nodeId, neighborId, parent=parentId, alignment=alignment, main_edge=main_edge_id)
         for neighborId, v in otherNodeAdj.items():
             parentId = v['parent']
+            alignment = v['alignment']
+            main_edge_id = v['main_edge']
+            if main_edge_id is not None and main_edge_id == node:
+                main_edge_id = joinedNode.nodeId
             if parentId is otherNode:
                 parentId = joinedNode.nodeId
-            self.graph.add_edge(joinedNode.nodeId, neighborId, parent=parentId)
+            self.graph.add_edge(joinedNode.nodeId, neighborId, parent=parentId, alignment=alignment, main_edge=main_edge_id)
 
     def unfold_graph(self):
         all_nodes_unfolded = True

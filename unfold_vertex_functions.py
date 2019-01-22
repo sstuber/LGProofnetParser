@@ -64,7 +64,7 @@ def unfold_premise_tensor(main_vertex, string_array, graph):
     link_node.type = LinkType.Par
 
     graph.addEdge(a_node, link_node, alignment=EdgeAlignment.Left)
-    graph.addEdge(link_node, main_vertex, alignment=EdgeAlignment.Straight)
+    graph.addEdge(link_node, main_vertex, alignment=EdgeAlignment.Straight, main_edge=main_vertex.nodeId)
     graph.addEdge(b_node, link_node, alignment=EdgeAlignment.Right)
 
     main_vertex.is_unfolded = True
@@ -79,7 +79,7 @@ def unfold_premise_forwardslash(main_vertex, string_array, graph):
 
     link_node.main = main_vertex
 
-    graph.addEdge(link_node, main_vertex, alignment=EdgeAlignment.Left)
+    graph.addEdge(link_node, main_vertex, alignment=EdgeAlignment.Left, main_edge=main_vertex.nodeId)
     graph.addEdge(link_node,b_node, alignment=EdgeAlignment.Right)
     graph.addEdge(a_node,link_node, alignment=EdgeAlignment.Straight)
 
@@ -96,7 +96,7 @@ def unfold_premise_backwardslash(main_vertex, string_array, graph):
 
     link_node.main = main_vertex
 
-    graph.addEdge(link_node, main_vertex, alignment=EdgeAlignment.Right)
+    graph.addEdge(link_node, main_vertex, alignment=EdgeAlignment.Right, main_edge=main_vertex.nodeId)
     graph.addEdge(link_node, b_node, alignment=EdgeAlignment.Left)
     graph.addEdge(a_node, link_node, alignment=EdgeAlignment.Straight)
 
@@ -112,7 +112,7 @@ def unfold_premise_square(main_vertex, string_array, graph):
 
     link_node.main = main_vertex
 
-    graph.addEdge(link_node,main_vertex, alignment=EdgeAlignment.Straight)
+    graph.addEdge(link_node,main_vertex, alignment=EdgeAlignment.Straight, main_edge=main_vertex.nodeId)
     graph.addEdge(a_node, link_node, alignment=EdgeAlignment.Straight)
 
     main_vertex.is_unfolded = True
@@ -128,7 +128,7 @@ def unfold_premise_diamond(main_vertex, string_array, graph):
     link_node.main = main_vertex
     link_node.type = LinkType.Par
 
-    graph.addEdge(link_node,main_vertex, alignment=EdgeAlignment.Straight)
+    graph.addEdge(link_node,main_vertex, alignment=EdgeAlignment.Straight, main_edge=main_vertex.nodeId)
     graph.addEdge(a_node, link_node, alignment=EdgeAlignment.Straight)
 
     main_vertex.is_unfolded = True
@@ -146,7 +146,7 @@ def unfold_conclusion_forwardslash(main_vertex, string_array, graph):
 
     graph.addEdge(link_node, a_node, alignment=EdgeAlignment.Straight)
     graph.addEdge(b_node, link_node, alignment=EdgeAlignment.Right)
-    graph.addEdge(main_vertex, link_node, alignment=EdgeAlignment.Left)
+    graph.addEdge(main_vertex, link_node, alignment=EdgeAlignment.Left, main_edge=main_vertex.nodeId)
 
     main_vertex.is_unfolded = True
     return graph
@@ -162,7 +162,7 @@ def unfold_conclusion_tensor(main_vertex, string_array, graph):
 
     graph.addEdge(link_node, a_node, alignment=EdgeAlignment.Left)
     graph.addEdge(link_node, b_node, alignment=EdgeAlignment.Right)
-    graph.addEdge(main_vertex, link_node, alignment=EdgeAlignment.Straight)
+    graph.addEdge(main_vertex, link_node, alignment=EdgeAlignment.Straight, main_edge=main_vertex.nodeId)
 
     main_vertex.is_unfolded = True
     return graph
@@ -179,7 +179,7 @@ def unfold_conclusion_backwardslash(main_vertex, string_array, graph):
 
     graph.addEdge(link_node, a_node, alignment=EdgeAlignment.Straight)
     graph.addEdge(b_node, link_node, alignment=EdgeAlignment.Left)
-    graph.addEdge(main_vertex, link_node, alignment=EdgeAlignment.Right)
+    graph.addEdge(main_vertex, link_node, alignment=EdgeAlignment.Right, main_edge=main_vertex.nodeId)
 
     main_vertex.is_unfolded = True
     return graph
@@ -194,7 +194,7 @@ def unfold_conclusion_square(main_vertex, string_array, graph):
     link_node.main = main_vertex
     link_node.type = LinkType.Par
 
-    graph.addEdge(main_vertex, link_node, alignment=EdgeAlignment.Straight)
+    graph.addEdge(main_vertex, link_node, alignment=EdgeAlignment.Straight, main_edge=main_vertex.nodeId)
     graph.addEdge(link_node, a_node, alignment=EdgeAlignment.Straight)
 
     main_vertex.is_unfolded = True
@@ -209,7 +209,7 @@ def unfold_conclusion_diamond(main_vertex, string_array, graph):
 
     link_node.main = main_vertex
 
-    graph.addEdge(main_vertex, link_node, alignment=EdgeAlignment.Straight)
+    graph.addEdge(main_vertex, link_node, alignment=EdgeAlignment.Straight, main_edge=main_vertex.nodeId)
     graph.addEdge(link_node, a_node, alignment=EdgeAlignment.Straight)
 
     main_vertex.is_unfolded = True
