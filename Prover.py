@@ -22,7 +22,7 @@ class Prover:
         lexicalCombinations_with_targettype = list(map(lambda graph_list:
                                                     add_target_type_graph(graph_list, targetType), lexicalCombinations)
                                                 )
-
+        #
         # g1 = LoLaGraph()
         # g2 = LoLaGraph()
         #
@@ -61,9 +61,10 @@ class Prover:
         # g2.addEdge(n10, l4)
         #
         # lexicalCombinations = [[g1, g2]]
-        #
-        # targetType = "snps"
-
+        # lexicalCombinations_with_targettype = list(map(lambda graph_list:
+        #                                                add_target_type_graph(graph_list, "snps"),
+        #                                                lexicalCombinations)
+        #                                            )
         for lexicalCombination in lexicalCombinations_with_targettype:
             perms = list(itertools.permutations(lexicalCombination))
 
@@ -79,13 +80,12 @@ class Prover:
                 graphs = graphs + accumulatedGraphs
 
             graphs = [g for g in graphs if len(g.getConclusions()) == 1 and g.getConclusions()[0].sequent == targetType]
+            graphs = [g for g in graphs if g.hasCorrectWordOrder(sentence)]
             # TODO: remove duplicate graphs and this line below
             try:
                 graphs = [graphs[0]]
             except:
                 pass
-
-            # graphs[0].hasCorrectWordOrder(sentence)
 
             while graphs:
                 graph = graphs.pop()

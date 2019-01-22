@@ -12,6 +12,16 @@ class LoLaGraph:
         self.parentGraph = parent_graph
         self.graph = nx.Graph()
 
+    # returns a fresh graph
+    def copy(self):
+        newLoLaGraph = LoLaGraph(self.parentGraph)
+        newGraph = self.graph.copy()
+        ding = dict(newGraph.nodes())
+        for k, v in ding.items():
+            v['node'] = v['node'].copy(newLoLaGraph)
+        newLoLaGraph.graph = newGraph
+        return newLoLaGraph
+
     # Get the words in a graph from left to right
     def getOrderedPremises(self):
         # DFS starting at conclusion, traversing left-first
@@ -101,21 +111,45 @@ class LoLaGraph:
             v1 = self.getNode(connection[0])
             v2 = otherGraph.getNode(connection[1])
             # if you are a sequent root, only connect if you stay a premise
-            if v1.is_sequent_root and v2.getVertexType(otherGraph) != VertexType.Premise:
-                return None
-            if v2.is_sequent_root and v1.getVertexType(self) != VertexType.Premise:
-                return None
+            if v1.is_sequent_root:
+                if v1.from_target_type: # must stay a conclusion
+                    if v2.getVertexType(otherGraph) != VertexType.Conclusion:
+                        return None
+                else: # must stay a premise
+                    if v2.getVertexType(otherGraph) != VertexType.Premise:
+                        return None
+            if v2.is_sequent_root:
+                if v2.from_target_type: # must stay a conclusion
+                    if v1.getVertexType(self) != VertexType.Conclusion:
+                        return None
+                else: # must stay a premise
+                    if v1.getVertexType(self) != VertexType.Premise:
+                        return None
+            # if v1.is_sequent_root and v2.getVertexType(otherGraph) != VertexType.Premise:
+            #     return None
+            # if v2.is_sequent_root and v1.getVertexType(self) != VertexType.Premise:
+            #     return None
             if not v1.canConnect(v2, self, otherGraph):
                 return None
 
-        newGraph = LoLaGraph(self)
-        newGraph.graph = self.graph.copy()
+        newGraph = self.copy()#graph.copy()
 
         for connection in connectionMap:
             if connection[1] is not None:
                 newGraph.updateNode(connection[0].nodeId, connection[1].nodeId)
 
-        newGraph.graph = nx.compose(newGraph.graph, otherGraph.graph)
+        newGraph.graph = nx.compose(newGraph.graph, otherGraph.copy().graph)
+        # problem: compose takes properties from otherGraph. can lose word/is_sequent_root/from_target_type
+        # restore properties
+        for connection in connectionMap:
+            if connection[0].is_sequent_root:
+                if connection[1] is not None:
+                    node = newGraph.getNode(connection[1].nodeId)
+                    if node.nodeId is 3:
+                        print("HOI")
+                    node.word = connection[0].word
+                    node.is_sequent_root = connection[0].is_sequent_root
+                    node.from_target_type = connection[0].from_target_type
 
         return newGraph
 
@@ -168,8 +202,7 @@ class LoLaGraph:
         conclusion = [v for v in self.getChildren(downLink.nodeId) if v not in sharedVertices][0]
 
         # remove the two links and the shared vertices
-        newGraph = LoLaGraph(self)
-        newGraph.graph = self.graph.copy()
+        newGraph = self.copy()
 
         newGraph.graph.remove_node(upperLink)
         newGraph.graph.remove_node(downLink)
@@ -222,8 +255,7 @@ class LoLaGraph:
 
     # apply structural rule to rewrite graph
     def applyStructuralRule(self, link, otherLink, x, y, u, v, w, rule):
-        newGraph = LoLaGraph(self)
-        newGraph.graph = self.graph.copy()
+        newGraph = self.copy()
         newGraph.graph.remove_node(link)
         newGraph.graph.remove_node(otherLink)
         newLink = newGraph.addNode(NODE_FACTORY.createLinkNode(self))

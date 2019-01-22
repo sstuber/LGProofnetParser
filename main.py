@@ -121,9 +121,9 @@ if __name__ == '__main__':
     # print("end test rewrite")
     print("begin test 'Kids love Super_Mario'")
     prover = Prover()
-    sentence = "bob love"
+    sentence = "kids love super_mario"
     lexicon = get_types_file_dict()
-    prover.prove(sentence, lexicon, "s/(np\s)")
+    prover.prove(sentence, lexicon, "s")
     print("end test 'Kids love Super_Mario'")
 
     print("end main")

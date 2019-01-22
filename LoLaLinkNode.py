@@ -13,12 +13,6 @@ class LoLaLinkNode:
 
         self.nodeId: int = nodeId
 
-        # list of premise vertices
-        self.premises = []
-
-        # list of conclusion vertices
-        self.conclusions = []
-
         self.type: LinkType = LinkType.Tensor
 
         # type of function
@@ -28,6 +22,13 @@ class LoLaLinkNode:
         self.main: LoLaVertex = None
 
         self.graph = graph
+
+    # return a copy of a link node
+    def copy(self, newGraph):
+        newLolaLinkNode = LoLaLinkNode(self.nodeId, newGraph)
+        newLolaLinkNode.type = self.type
+        newLolaLinkNode.mode = self.mode
+        return newLolaLinkNode
 
     def getLinkShape(self, graph):
         if len(graph.getParents(self.nodeId)) == 2:
@@ -70,6 +71,15 @@ class LoLaVertex:
         # lola graph
         self.graph = graph
 
+    # return a copy of this node
+    def copy(self, newGraph):
+        newLinkVertex = LoLaVertex(self.nodeId, newGraph, self.sequent)
+        newLinkVertex.is_unfolded = self.is_unfolded
+        newLinkVertex.is_sequent_root = self.is_sequent_root
+        newLinkVertex.from_target_type = self.from_target_type
+        newLinkVertex.word = self.word
+        return newLinkVertex
+
     def __hash__(self):
         return hash(self.nodeId)
 
@@ -87,6 +97,8 @@ class LoLaVertex:
         children = graph.getChildren(self.nodeId)
 
         if graph.node_count() == 1:
+            if self.from_target_type:
+                return VertexType.Premise
             return VertexType.Conclusion
 
         if not parents:
