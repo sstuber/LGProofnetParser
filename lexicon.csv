@@ -1,10 +1,14 @@
 word,type
-test,np
 kids,np
-love,(np\s)/np
-love,np\(s/np)
+games,n
 parents,np
+love,(np\s)/np
+hate,(np\s)/np
+parents,np
+that,(n\n)/(s/(diamond(square(np))))
+but,((s/(diamond(square(np))))\(square(s/np)))/(s/(diamond(square(np))))
 super_mario,np
 test,np/(s\(square(np)))
 bob,np
+square,diamond(square(np))
 leukwoord,(s/(np\s))\s
