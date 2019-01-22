@@ -19,9 +19,8 @@ class Prover:
         derivations = []
         lexicalCombinations = list(itertools.product(*unfolded_graphs))
 
-        lexicalCombinations_with_targettype = list(map(lambda graph_list:
-                                                    add_target_type_graph(graph_list, targetType), lexicalCombinations)
-                                                )
+        lexicalCombinations_with_targettype = list(map(lambda graph_list:add_target_type_graph(
+            graph_list, targetType), lexicalCombinations))
         #
         # g1 = LoLaGraph()
         # g2 = LoLaGraph()

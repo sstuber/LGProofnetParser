@@ -223,7 +223,8 @@ class LoLaGraph:
             return None
 
         # the conclusion is the child of the remaining link that is not in shared vertices
-        conclusion = [v for v in self.getChildren(downLink.nodeId) if v not in sharedVertices][0]
+        conclusion_id = [v for v in self.getChildren(downLink.nodeId) if v not in sharedVertices][0]
+        conclusion = self.graph.nodes[conclusion_id]['node']
 
         # remove the two links and the shared vertices
         newGraph = self.copy()
@@ -257,7 +258,8 @@ class LoLaGraph:
             return None
 
         # the conclusion is the child of the remaining link that is not in shared vertices
-        conclusion = [v for v in self.getChildren(downLink.nodeId) if v not in sharedVertices][0]
+        conclusion_id = [v for v in self.getChildren(downLink.nodeId) if v not in sharedVertices][0]
+        conclusion = self.graph.nodes[conclusion_id]['node']
 
         # remove the two links and the shared vertices
         newGraph = self.copy()
