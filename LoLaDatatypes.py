@@ -6,6 +6,13 @@ class VertexType(Enum):
     Conclusion = 'conclusion'
     NotALeaf = 'notaleaf'
 
+    def OppositeLeafType(vertexType):
+        if vertexType == VertexType.Premise:
+            return VertexType.Conclusion
+        elif vertexType == VertexType.Conclusion:
+            return VertexType.Premise
+        return "invalid parameter in OppositeLeafType"
+
 
 class LinkType(Enum):
     Tensor = 'tensor'

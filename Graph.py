@@ -14,19 +14,42 @@ class LoLaGraph:
 
     # return list of new graphs that can be created from connecting with otherGraph
     def getPossibleConnections(self, otherGraph):
-        leaves = [leaf.nodeId for leaf in self.getLeaves()]
-        otherLeaves = [leaf.nodeId for leaf in otherGraph.getLeaves()]
 
-        # NOTE: len(leaves) must be geq than len(otherLeaves)
-        if len(leaves) < len(otherLeaves):
-            return otherGraph.getPossibleConnections(self)
+        # get the leaves from both graphs
+        leaves = [leaf for leaf in self.getLeaves()]
+        otherLeaves = [leaf for leaf in otherGraph.getLeaves()]
 
-        combinations = [zip(leaf, otherLeaves)
-                       for leaf in itertools.permutations(leaves, len(otherLeaves))]
+        # build a list for each leaf in this graph for which leaves in the other graph it can connect with
+        candidatesConnections = []
+        for leaf in leaves:
+
+            opposingLeaves = [otherLeaf for otherLeaf in otherLeaves
+             if otherLeaf.getVertexType(otherGraph) == VertexType.OppositeLeafType(leaf.getVertexType(self))
+             and leaf.sequent == otherLeaf.sequent]
+
+            candidatesConnections.append(opposingLeaves + [None])
+
+        # a connectionMap tells each vertex which vertex in the other graph to connect with
+        candidatesConnections = list(itertools.product(*candidatesConnections))[:-1]
+        connectionMaps = []
+        # if a connectionMap points to the same vertex twice, it is invalid
+        for connectionMap in candidatesConnections:
+            seen = set()
+            duplicate = False
+            for vertex in connectionMap:
+                if vertex in seen:
+                    duplicate = True
+                    break
+                if vertex is not None:
+                    seen.add(vertex)
+            if not duplicate:
+                connectionMaps.append(connectionMap)
+
+        connectionMaps = list(map(lambda x: list(zip(leaves, x)), connectionMaps))
 
         newGraphs = []
-        for combination in combinations:
-            newGraph = self.connect(otherGraph, list(combination))
+        for connectionMap in connectionMaps:
+            newGraph = self.connect(otherGraph, connectionMap)
             if newGraph:
                 newGraphs.append(newGraph)
 
@@ -38,6 +61,9 @@ class LoLaGraph:
     def connect(self, otherGraph, connectionMap):
 
         for connection in connectionMap:
+            # if the leave will not connect, connection[1] is None
+            if connection[1] is None:
+                continue
             v1 = self.getNode(connection[0])
             v2 = otherGraph.getNode(connection[1])
             # if you are a sequent root, only connect if you stay a premise
@@ -52,7 +78,8 @@ class LoLaGraph:
         newGraph.graph = self.graph.copy()
 
         for connection in connectionMap:
-            newGraph.updateNode(connection[0], connection[1])
+            if connection[1] is not None:
+                newGraph.updateNode(connection[0].nodeId, connection[1].nodeId)
 
         newGraph.graph = nx.compose(newGraph.graph, otherGraph.graph)
 
@@ -74,11 +101,16 @@ class LoLaGraph:
         if vertex.getVertexType(self) == VertexType.Conclusion:
             return None
         # this is the upper of two links
-        upperLink = self.getNode(self.getChildren(vertex.nodeId)[0])
-        downLink = self.getNode(self.getChildren(self.getChildren(upperLink.nodeId)[0])[0])
-
+        try:
+            upperLink = self.getNode(self.getChildren(vertex.nodeId)[0])
+            downLink = self.getNode(self.getChildren(self.getChildren(upperLink.nodeId)[0])[0])
+        except:
+            return None
         # the links must be a different type
         if upperLink.type == downLink.type:
+            return None
+        # the links must be a different shape
+        if upperLink.getLinkShape(self) == downLink.getLinkShape(self):
             return None
         # the links must share two vertices
         sharedVertices = upperLink.getSharedVertices(downLink, self)
@@ -152,6 +184,11 @@ class LoLaGraph:
         newGraph.graph.remove_node(otherLink)
         newLink = newGraph.addNode(NODE_FACTORY.createLinkNode(self))
         newOtherLink = newGraph.addNode(NODE_FACTORY.createLinkNode(self))
+        x = self.getNode(x)
+        y = self.getNode(y)
+        u = self.getNode(u)
+        v = self.getNode(v)
+        w = self.getNode(w)
 
         if rule is 0:
             newGraph.addEdge(newLink, x)
@@ -224,8 +261,6 @@ class LoLaGraph:
 
     # return the node from the graph with nodeId
     def getNode(self, nodeId):
-        if nodeId is 27:
-            print("hoi")
         return self.graph.nodes()[nodeId]['node']
 
     # Update the nodeId to newId
@@ -329,6 +364,8 @@ class LoLaGraph:
             colors.append(node.getColor(self))
             if type(node) is LoLaVertex:
                 labels[node.nodeId] = str(node.nodeId) + " " + node.sequent
+            else:
+                labels[node.nodeId] = str(node.nodeId)
 
         # draw the graph
         nx.draw(self.graph, show_labels=True, labels=labels, node_color=colors, node_size=250, font_size=8)
