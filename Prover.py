@@ -19,6 +19,9 @@ class Prover:
         derivations = []
         lexicalCombinations = list(itertools.product(*unfolded_graphs))
 
+        lexicalCombinations_with_targettype = list(map(lambda graph_list:
+                                                    add_target_type_graph(graph_list, targetType), lexicalCombinations)
+                                                )
 
         g1 = LoLaGraph()
         g2 = LoLaGraph()
@@ -57,11 +60,11 @@ class Prover:
         g2.addEdge(l4, n8)
         g2.addEdge(n10, l4)
 
-        lexicalCombinations = [[g1, g2]]
+        #lexicalCombinations = [[g1, g2]]
 
-        targetType = "snps"
+        #targetType = "snps"
 
-        for lexicalCombination in lexicalCombinations:
+        for lexicalCombination in lexicalCombinations_with_targettype:
             perms = list(itertools.permutations(lexicalCombination))
 
             graphs = []
@@ -152,3 +155,20 @@ def create_unfolded_graph_list_from_word(sequence_list):
         graph_list.append(graph)
 
     return graph_list
+
+
+def add_target_type_graph(graph_list, targettype):
+    graph = LoLaGraph()
+
+    lola_vertex = NODE_FACTORY.createVertex(graph, targettype)
+    lola_vertex.is_sequent_root = True
+    lola_vertex.from_target_type = True
+
+    graph.addNode(lola_vertex)
+
+    graph = graph.unfold_graph()
+
+    new_graph_list = (*graph_list, graph)
+
+    return new_graph_list
+

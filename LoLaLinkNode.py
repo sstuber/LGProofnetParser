@@ -63,6 +63,7 @@ class LoLaVertex:
         self.is_unfolded: bool = False
 
         self.is_sequent_root = False
+        self.from_target_type = False
 
         # lola graph
         self.graph = graph
@@ -106,6 +107,9 @@ class LoLaVertex:
 
         sequent_type, string_array = ParseSequent(self.sequent)
         vertex_type = self.getVertexType(graph)
+
+        if self.from_target_type:
+            vertex_type = VertexType.Premise
 
         changed_graph = unfold_function(vertex_type, sequent_type, self, string_array, new_graph)
 
