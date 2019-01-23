@@ -5,6 +5,19 @@ from Prover import *
 from NodeFactory import *
 from Graph import *
 
+
+def get_bias_input():
+    pos_input = set(['p','+','true','t','y'])
+    neg_input = set(['n','-','false','f'])
+    user_input = input('').lower()
+    if user_input in pos_input:
+        return True
+    if user_input in neg_input:
+        return False
+    print("The input you gave was invalid. Please respond with + or -")
+    return get_bias_input()
+
+
 MATCH_REGEX = r'(\w+|\(.+\))(\/|\\)(\(.+\)|\w+)|(\w+)'
 function_dict = {
     '/': 'right',
@@ -27,12 +40,14 @@ if __name__ == '__main__':
         print('give target type')
         targetType = input('')
 
-        # print('give bias for s')
-        # bias_s = input('')
-        # print('give bias for n')
-        # bias_n = input('')
-        # print('give bias for np')
-        # bias_np = input('')
+        print('give bias for s')
+        bias_s = get_bias_input()
+        print('give bias for n')
+        bias_n = get_bias_input()
+        print('give bias for np')
+        bias_np = get_bias_input()
+
+        bias = {bias_s, bias_n, bias_np}
 
         print("Begin test: " + sentence + " |- " + targetType)
         try:
@@ -44,3 +59,5 @@ if __name__ == '__main__':
         print("end test " + sentence)
 
     print("end main")
+
+
