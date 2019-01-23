@@ -18,6 +18,10 @@ class LoLaLinkNode:
         # type of function
         self.mode: LinkMode = LinkMode.Binary
 
+        self.left: bool = True
+
+        self.sequent_type = None
+
         # vertex that combines the other nodes (main vertex)
         self.main: LoLaVertex = None
 
@@ -28,6 +32,8 @@ class LoLaLinkNode:
         newLolaLinkNode = LoLaLinkNode(self.nodeId, newGraph)
         newLolaLinkNode.type = self.type
         newLolaLinkNode.mode = self.mode
+        newLolaLinkNode.left = self.left
+        newLolaLinkNode.sequent_type = self.sequent_type
         return newLolaLinkNode
 
     def getLinkShape(self, graph):

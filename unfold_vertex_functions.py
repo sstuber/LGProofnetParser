@@ -3,9 +3,6 @@ from LoLaDatatypes import LinkType, LinkMode, VertexType, EdgeAlignment
 from NodeFactory import NODE_FACTORY
 from SequentParser import SequentType
 
-
-
-
 combined_sequent_id = 0
 a_sequent_id = 1
 b_sequent_id = 2
@@ -53,7 +50,7 @@ def unfold_single_word(vertex, string_array, graph):
     vertex.is_unfolded = True
     return graph
 
-
+# premise is left
 def unfold_premise_tensor(main_vertex, string_array, graph):
 
     graph.addNode(main_vertex)
@@ -62,6 +59,7 @@ def unfold_premise_tensor(main_vertex, string_array, graph):
 
     link_node.main = main_vertex
     link_node.type = LinkType.Par
+    link_node.sequent_type = SequentType.Tensor
 
     graph.addEdge(a_node, link_node, alignment=EdgeAlignment.Left)
     graph.addEdge(link_node, main_vertex, alignment=EdgeAlignment.Straight, main_edge=main_vertex.nodeId)
@@ -78,6 +76,7 @@ def unfold_premise_forwardslash(main_vertex, string_array, graph):
     a_node, b_node, link_node = get_binary_nodes(graph, string_array)
 
     link_node.main = main_vertex
+    link_node.sequent_type = SequentType.ForwardSlash
 
     graph.addEdge(link_node, main_vertex, alignment=EdgeAlignment.Left, main_edge=main_vertex.nodeId)
     graph.addEdge(link_node,b_node, alignment=EdgeAlignment.Right)
@@ -95,6 +94,7 @@ def unfold_premise_backwardslash(main_vertex, string_array, graph):
     b_node, a_node, link_node = get_binary_nodes(graph, string_array)
 
     link_node.main = main_vertex
+    link_node.sequent_type = SequentType.BackwardSlash
 
     graph.addEdge(link_node, main_vertex, alignment=EdgeAlignment.Right, main_edge=main_vertex.nodeId)
     graph.addEdge(link_node, b_node, alignment=EdgeAlignment.Left)
@@ -111,6 +111,7 @@ def unfold_premise_square(main_vertex, string_array, graph):
     a_node, link_node = get_unary_nodes(graph,string_array)
 
     link_node.main = main_vertex
+    link_node.sequent_type = SequentType.Square
 
     graph.addEdge(link_node,main_vertex, alignment=EdgeAlignment.Straight, main_edge=main_vertex.nodeId)
     graph.addEdge(a_node, link_node, alignment=EdgeAlignment.Straight)
@@ -127,12 +128,14 @@ def unfold_premise_diamond(main_vertex, string_array, graph):
 
     link_node.main = main_vertex
     link_node.type = LinkType.Par
+    link_node.sequent_type = SequentType.Diamond
 
     graph.addEdge(link_node,main_vertex, alignment=EdgeAlignment.Straight, main_edge=main_vertex.nodeId)
     graph.addEdge(a_node, link_node, alignment=EdgeAlignment.Straight)
 
     main_vertex.is_unfolded = True
     return graph
+
 
 
 def unfold_conclusion_forwardslash(main_vertex, string_array, graph):
@@ -143,6 +146,8 @@ def unfold_conclusion_forwardslash(main_vertex, string_array, graph):
 
     link_node.main = main_vertex
     link_node.type = LinkType.Par
+    link_node.left = False
+    link_node.sequent_type = SequentType.ForwardSlash
 
     graph.addEdge(link_node, a_node, alignment=EdgeAlignment.Straight)
     graph.addEdge(b_node, link_node, alignment=EdgeAlignment.Right)
@@ -159,6 +164,8 @@ def unfold_conclusion_tensor(main_vertex, string_array, graph):
     a_node, b_node, link_node = get_binary_nodes(graph, string_array)
 
     link_node.main = main_vertex
+    link_node.left = False
+    link_node.sequent_type = SequentType.Tensor
 
     graph.addEdge(link_node, a_node, alignment=EdgeAlignment.Left)
     graph.addEdge(link_node, b_node, alignment=EdgeAlignment.Right)
@@ -176,6 +183,8 @@ def unfold_conclusion_backwardslash(main_vertex, string_array, graph):
 
     link_node.main = main_vertex
     link_node.type = LinkType.Par
+    link_node.left = False
+    link_node.sequent_type = SequentType.BackwardSlash
 
     graph.addEdge(link_node, a_node, alignment=EdgeAlignment.Straight)
     graph.addEdge(b_node, link_node, alignment=EdgeAlignment.Left)
@@ -193,6 +202,8 @@ def unfold_conclusion_square(main_vertex, string_array, graph):
 
     link_node.main = main_vertex
     link_node.type = LinkType.Par
+    link_node.left = False
+    link_node.sequent_type = SequentType.Square
 
     graph.addEdge(main_vertex, link_node, alignment=EdgeAlignment.Straight, main_edge=main_vertex.nodeId)
     graph.addEdge(link_node, a_node, alignment=EdgeAlignment.Straight)
@@ -208,6 +219,8 @@ def unfold_conclusion_diamond(main_vertex, string_array, graph):
     a_node, link_node = get_unary_nodes(graph,string_array)
 
     link_node.main = main_vertex
+    link_node.left = False
+    link_node.sequent_type = SequentType.Diamond
 
     graph.addEdge(main_vertex, link_node, alignment=EdgeAlignment.Straight, main_edge=main_vertex.nodeId)
     graph.addEdge(link_node, a_node, alignment=EdgeAlignment.Straight)
