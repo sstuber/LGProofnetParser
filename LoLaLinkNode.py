@@ -27,6 +27,9 @@ class LoLaLinkNode:
 
         self.graph = graph
 
+    def get_pre_arrow_tuple(self):
+        return self.left, self.sequent_type
+
     # return a copy of a link node
     def copy(self, newGraph):
         newLolaLinkNode = LoLaLinkNode(self.nodeId, newGraph)

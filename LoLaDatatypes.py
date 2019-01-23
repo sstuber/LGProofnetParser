@@ -1,6 +1,11 @@
 from enum import Enum
 
 
+class AxiomLinkType(Enum):
+    Blue = 'Blue'
+    Red = 'Red'
+
+
 class VertexType(Enum):
     Premise = 'premise'
     Conclusion = 'conclusion'
