@@ -26,11 +26,31 @@ def get_axiom_link_of_vertex(graph, vertex):
     children_nodes = graph.getChildren(vertex.nodeId)
 
     if len(parent_nodes) == 0:
+        child_link_node = children_nodes[0]
+        child_pre_info = child_link_node.get_pre_arrow_tuple()
+
+        is_main_of_child = check_if_link_has_vertex_as_main(graph, child_link_node, vertex.nodeId)
+
+        if child_pre_info in red_child_no_tentacle or (child_pre_info in red_child_tentacle and is_main_of_child):
+            print(' red candidate')
+            if vertex.is_sequent_root:
+                return AxiomLinkType.Red
 
         print('isPremise')
+        return None
 
     if len(children_nodes) == 0:
+        parent_link_node = parent_nodes[0]
+        parent_pre_info = parent_link_node.get_pre_arrow_tuple()
+        is_main_of_parent = check_if_link_has_vertex_as_main(graph, parent_link_node, vertex.nodeId)
+
+        if parent_pre_info in blue_parent_no_tentacle or (
+                parent_pre_info in blue_parent_no_tentacle and is_main_of_parent):
+            if vertex.from_target_type:
+                return AxiomLinkType.Blue
+
         print('isConclusion')
+        return None
 
     parent_link_node = parent_nodes[0]
     parent_pre_info = parent_link_node.get_pre_arrow_tuple()
@@ -47,7 +67,7 @@ def get_axiom_link_of_vertex(graph, vertex):
             return AxiomLinkType.Blue
 
     if parent_pre_info in red_parent_no_tentacle or (parent_pre_info in red_parent_tentacle and not is_main_of_parent):
-        if child_pre_info in red_child_no_tentacle or (parent_pre_info in red_child_tentacle and is_main_of_child):
+        if child_pre_info in red_child_no_tentacle or (child_pre_info in red_child_tentacle and is_main_of_child):
             print(' red candidate')
             return AxiomLinkType.Red
 
@@ -65,6 +85,7 @@ def check_if_link_has_vertex_as_main(graph, linknode, vertex_id):
             if main_edge_id is not None and main_edge_id == vertex_id:
                 return True
     return False
+
 
 bias = {
     's': False,
