@@ -192,6 +192,17 @@ class LoLaGraph:
         else:
             return self.contractUnary(vertex, upperLink)
 
+    def check_if_link_has_vertex_as_main(self, linknode, vertex_id):
+        adj = self.graph.adj[linknode.nodeId]
+        # for each edge check if the neighbour is the inbetween vertex
+        for neighbourid, edge_dict in adj.items():
+            if neighbourid == vertex_id:
+                main_edge_id = edge_dict['main_edge']
+
+                # and check of the edge the main edge is
+                if main_edge_id is not None and main_edge_id == vertex_id:
+                    return False
+        return True
 
     def contractUnary(self, vertex, upperLink):
 
@@ -211,27 +222,34 @@ class LoLaGraph:
 
         # if a linknode is par check of the main vertex is not the in between the link nodes
         if upperLink.type == LinkType.Par:
+            # in between vertex is main -> don't contract
+            if not self.check_if_link_has_vertex_as_main(upperLink, in_between_vertex_id):
+                return None
 
-            adj = self.graph.adj[upperLink.nodeId]
-            # for each edge check if the neighbour is the inbetween vertex
-            for neighbourid, edge_dict in adj.items():
-                if neighbourid == in_between_vertex_id:
-                    main_edge_id = edge_dict['main_edge']
-
-                    # and check of the edge the main edge is
-                    if main_edge_id is not None and main_edge_id == in_between_vertex_id:
-                        return None
+            # adj = self.graph.adj[upperLink.nodeId]
+            # # for each edge check if the neighbour is the inbetween vertex
+            # for neighbourid, edge_dict in adj.items():
+            #     if neighbourid == in_between_vertex_id:
+            #         main_edge_id = edge_dict['main_edge']
+            #
+            #         # and check of the edge the main edge is
+            #         if main_edge_id is not None and main_edge_id == in_between_vertex_id:
+            #             return None
 
         if downLink.type == LinkType.Par:
-            adj = self.graph.adj[downLink.nodeId]
-            # for each edge check if the neighbour is the inbetween vertex
-            for neighbourid, edge_dict in adj.items():
-                if neighbourid == in_between_vertex_id:
-                    main_edge_id = edge_dict['main_edge']
+            # in between vertex is main -> don't contract
+            if not self.check_if_link_has_vertex_as_main(downLink, in_between_vertex_id):
+                return None
 
-                    # and check of the edge the main edge is
-                    if main_edge_id is not None and main_edge_id == in_between_vertex_id:
-                        return None
+            # adj = self.graph.adj[downLink.nodeId]
+            # # for each edge check if the neighbour is the inbetween vertex
+            # for neighbourid, edge_dict in adj.items():
+            #     if neighbourid == in_between_vertex_id:
+            #         main_edge_id = edge_dict['main_edge']
+            #
+            #         # and check of the edge the main edge is
+            #         if main_edge_id is not None and main_edge_id == in_between_vertex_id:
+            #             return None
 
         sharedVertices = upperLink.getSharedVertices(downLink, self)
         if len(sharedVertices) != 1:
