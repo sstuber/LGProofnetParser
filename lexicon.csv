@@ -3,6 +3,14 @@ kids,np
 games,n
 parents,np
 love,(np\s)/np
+everyone,(np/n)tensor(n)
+appeared,np\s
+every,np/n
+teacher,n
+student,n
+some,np/n
+likes,(np\s)/np
+love,np\(s/np)
 hate,(np\s)/np
 that,(n\n)/(s/(diamond(square(np))))
 but,((s/(diamond(square(np))))\(square(s/np)))/(s/(diamond(square(np))))

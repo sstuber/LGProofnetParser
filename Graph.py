@@ -19,6 +19,13 @@ class LoLaGraph:
     def __hash__(self):
         return hash(tuple(sorted(self.graph.degree())))
 
+    def get_deep_parent(self):
+        tmp_graph = self.parentGraph
+
+        if tmp_graph is None:
+            return self
+        return tmp_graph.get_deep_parent()
+
     # returns a fresh graph
     def copy(self):
         newLoLaGraph = LoLaGraph(self.parentGraph)
@@ -283,6 +290,7 @@ class LoLaGraph:
 
         # remove the two links and the shared vertices
         newGraph = self.copy()
+        newGraph.parentGraph = self
 
         newGraph.graph.remove_node(upperLink)
         newGraph.graph.remove_node(downLink)
@@ -318,6 +326,7 @@ class LoLaGraph:
 
         # remove the two links and the shared vertices
         newGraph = self.copy()
+        newGraph.parentGraph = self
 
         newGraph.graph.remove_node(upperLink)
         newGraph.graph.remove_node(downLink)
@@ -356,6 +365,7 @@ class LoLaGraph:
             return False
 
         newGraph = self.copy()
+        newGraph.parentGraph = self
 
         sharedUpperMiddle = upperLink.getSharedVertices(middleLink, newGraph)
         sharedMiddleLower = middleLink.getSharedVertices(lowerLink, newGraph)
@@ -508,7 +518,7 @@ class LoLaGraph:
     def updateNodeFeest(self, node, otherNode):
 
         # restore node properties
-        if node.word:
+        if node.word or node.from_target_type:
             otherNode.word = node.word
             otherNode.is_sequent_root = node.is_sequent_root
             otherNode.from_target_type = node.from_target_type
@@ -675,6 +685,8 @@ class LoLaGraph:
                     labels[node.nodeId] = str(node.nodeId) + " " + node.word
                 else:
                     labels[node.nodeId] = str(node.nodeId)#""#str(node.nodeId) + " " + node.sequent
+                if node.axiom_link is not None:
+                    labels[node.nodeId] = labels[node.nodeId] + '  ' + node.axiom_link[0].value + " "+ node.axiom_link[1].value
             else:
                 labels[node.nodeId] = ""# str(node.nodeId)
 

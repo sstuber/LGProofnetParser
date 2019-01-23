@@ -4,6 +4,7 @@ import re
 from Graph import *
 import itertools
 import networkx as nx
+from Axiom_links import transform_to_axiom_graph
 
 TYPES_PATH = './lexicon.csv'
 
@@ -102,6 +103,17 @@ class Prover:
         print("finished contracting and rewriting graphs")
 
         for derivation in derivations:
+
+            main_proof_structure = derivation.get_deep_parent()
+            tmp_bias_map = {
+                's': False,
+                'np': True,
+                'n': True
+            }
+
+            transfromed_graph = transform_to_axiom_graph(main_proof_structure,tmp_bias_map)
+
+            transfromed_graph.draw()
             # return the proof term
             derivation.draw()
 
