@@ -8,6 +8,7 @@ from LoLaDatatypes import *
 
 class LoLaGraph:
 
+
     def __init__(self, parent_graph=None):
         self.parentGraph = parent_graph
         self.graph = nx.Graph()
@@ -506,9 +507,6 @@ class LoLaGraph:
 
     def updateNodeFeest(self, node, otherNode):
 
-        if node.nodeId == 27 or otherNode.nodeId == 27:
-            print("feest")
-
         # restore node properties
         if node.word:
             otherNode.word = node.word
@@ -547,10 +545,10 @@ class LoLaGraph:
             adj = self.graph.adj[nodeId]
         except:
             return
-        for neighborId, v in adj.items():
-            parentId = v['parent']
-            alignment = v['alignment']
-            main_edge_id = v['main_edge']
+        for neighborId, edge in adj.items():
+            parentId = edge['parent']
+            alignment = edge['alignment']
+            main_edge_id = edge['main_edge']
             if main_edge_id is not None and main_edge_id == nodeId:
                 main_edge_id = newId
 
@@ -560,36 +558,56 @@ class LoLaGraph:
 
     # combine two vertices into one (after contraction)
     def joinVertices(self, node, otherNode):
-        # get the adj of the node
-        nodeAdj = self.graph.adj[node]
-        # get the adj of the otherNode
-        otherNodeAdj = self.graph.adj[otherNode]
-        # create the union of both nodes
-        joinedNode = self.addNode(NODE_FACTORY.createVertex(self, otherNode.sequent))
-        joinedNode.from_target_type = otherNode.from_target_type
-        joinedNode.is_sequent_root = otherNode.is_sequent_root
-        # remove the nodes from the graph
-        self.graph.remove_node(node)
-        self.graph.remove_node(otherNode)
-        # restore the edges
-        for neighborId, v in nodeAdj.items():
-            parentId = v['parent']
-            alignment = v['alignment']
-            main_edge_id = v['main_edge']
-            if main_edge_id is not None and main_edge_id == node:
-                main_edge_id = joinedNode.nodeId
-            if parentId is node:
-                parentId = joinedNode.nodeId
-            self.graph.add_edge(joinedNode.nodeId, neighborId, parent=parentId, alignment=alignment, main_edge=main_edge_id)
-        for neighborId, v in otherNodeAdj.items():
-            parentId = v['parent']
-            alignment = v['alignment']
-            main_edge_id = v['main_edge']
-            if main_edge_id is not None and main_edge_id == node:
-                main_edge_id = joinedNode.nodeId
-            if parentId is otherNode:
-                parentId = joinedNode.nodeId
-            self.graph.add_edge(joinedNode.nodeId, neighborId, parent=parentId, alignment=alignment, main_edge=main_edge_id)
+
+        try:
+            adj = self.graph.adj[node.nodeId]
+        except:
+            pass
+
+        self.graph.remove_node(node.nodeId)
+        for neighborId, edge in adj.items():
+            parentId = edge['parent']
+            alignment = edge['alignment']
+            main_edge_id = edge['main_edge']
+            if main_edge_id is not None and main_edge_id == node.id:
+                main_edge_id = otherNode.nodeId
+            if parentId is node.nodeId:
+                parentId = otherNode.nodeId
+            self.graph.add_edge(otherNode.nodeId, neighborId, parent=parentId, alignment=alignment, main_edge=main_edge_id)
+
+        ####
+
+        #
+        # # get the adj of the node
+        # nodeAdj = self.graph.adj[node]
+        # # get the adj of the otherNode
+        # otherNodeAdj = self.graph.adj[otherNode]
+        # # create the union of both nodes
+        # joinedNode = self.addNode(NODE_FACTORY.createVertex(self, otherNode.sequent))
+        # joinedNode.from_target_type = otherNode.from_target_type
+        # joinedNode.is_sequent_root = otherNode.is_sequent_root
+        # # remove the nodes from the graph
+        # self.graph.remove_node(node)
+        # self.graph.remove_node(otherNode)
+        # # restore the edges
+        # for neighborId, v in nodeAdj.items():
+        #     parentId = v['parent']
+        #     alignment = v['alignment']
+        #     main_edge_id = v['main_edge']
+        #     if main_edge_id is not None and main_edge_id == node:
+        #         main_edge_id = joinedNode.nodeId
+        #     if parentId is node:
+        #         parentId = joinedNode.nodeId
+        #     self.graph.add_edge(joinedNode.nodeId, neighborId, parent=parentId, alignment=alignment, main_edge=main_edge_id)
+        # for neighborId, v in otherNodeAdj.items():
+        #     parentId = v['parent']
+        #     alignment = v['alignment']
+        #     main_edge_id = v['main_edge']
+        #     if main_edge_id is not None and main_edge_id == node:
+        #         main_edge_id = joinedNode.nodeId
+        #     if parentId is otherNode:
+        #         parentId = joinedNode.nodeId
+        #     self.graph.add_edge(joinedNode.nodeId, neighborId, parent=parentId, alignment=alignment, main_edge=main_edge_id)
 
     def unfold_graph(self):
         all_nodes_unfolded = True

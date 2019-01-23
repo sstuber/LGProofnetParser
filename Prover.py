@@ -24,6 +24,7 @@ class Prover:
             graph_list, targetType), lexicalCombinations))
 
         for lexicalCombination in lexicalCombinations_with_targettype:
+            print("Start connecting graphs")
             proofStructure = lexicalCombination[0].copy()
             for i in range(1, len(lexicalCombination)):
                 proofStructure.graph = nx.compose(proofStructure.graph, lexicalCombination[i].copy().graph)
@@ -68,30 +69,41 @@ class Prover:
             graphs = []
 
             for connectionMap in itertools.product(*connectionMaps):
-
                 newGraph = proofStructure.connectFeest(list(connectionMap), sentence, targetType)
                 if newGraph:
                     graphs.append(newGraph)
 
-            visitedGraphs = set()
+            print("found " + str(len(graphs)) + " proofnets")
+            print("finished connecting graphs")
+            print("start contracting and rewriting graphs")
 
-            while graphs:
-                graph = graphs.pop()
+            for i in range(len(graphs)):
+                print("Trying graph " + str(i + 1) + "/" + str(len(graphs)))
+                graph = graphs[i]
+                testGraphs = [graph]
+                visitedGraphs = set()
 
-                if graph in visitedGraphs:
-                    continue
-                visitedGraphs.add(graph)
+                while testGraphs:
+                    testGraph = testGraphs.pop()
 
-                if graph.isTensorTree():
-                    derivations.append(graph)
-                    continue
+                    if testGraph in visitedGraphs:
+                        continue
 
-                graphs = graphs + graph.getPossibleContractions()
-                graphs = graphs + graph.getPossibleRewritings()
+                    visitedGraphs.add(testGraph)
+
+                    if testGraph.isTensorTree():
+                        derivations.append(testGraph)
+                        print("Derivation found")
+                        break
+
+                    testGraphs = testGraphs + testGraph.getPossibleContractions()
+                    testGraphs = testGraphs + testGraph.getPossibleRewritings()
+
+        print("finished contracting and rewriting graphs")
 
         for derivation in derivations:
             # return the proof term
-            print("ik ben een derivation")
+            derivation.draw()
 
         return derivations
 
