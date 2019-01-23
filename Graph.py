@@ -201,8 +201,8 @@ class LoLaGraph:
 
                 # and check of the edge the main edge is
                 if main_edge_id is not None and main_edge_id == vertex_id:
-                    return False
-        return True
+                    return True
+        return False
 
     def contractUnary(self, vertex, upperLink):
 
@@ -223,7 +223,7 @@ class LoLaGraph:
         # if a linknode is par check of the main vertex is not the in between the link nodes
         if upperLink.type == LinkType.Par:
             # in between vertex is main -> don't contract
-            if not self.check_if_link_has_vertex_as_main(upperLink, in_between_vertex_id):
+            if self.check_if_link_has_vertex_as_main(upperLink, in_between_vertex_id):
                 return None
 
             # adj = self.graph.adj[upperLink.nodeId]
@@ -238,7 +238,7 @@ class LoLaGraph:
 
         if downLink.type == LinkType.Par:
             # in between vertex is main -> don't contract
-            if not self.check_if_link_has_vertex_as_main(downLink, in_between_vertex_id):
+            if self.check_if_link_has_vertex_as_main(downLink, in_between_vertex_id):
                 return None
 
             # adj = self.graph.adj[downLink.nodeId]
@@ -261,6 +261,15 @@ class LoLaGraph:
         # the conclusion is the child of the remaining link that is not in shared vertices
         conclusion_id = [v for v in self.getChildren(downLink.nodeId) if v not in sharedVertices][0]
         conclusion = self.graph.nodes[conclusion_id]['node']
+
+        if upperLink.type == LinkType.Par:
+            # if upper link is par and hypotheses is not main don't contract
+            if not self.check_if_link_has_vertex_as_main(upperLink, vertex.nodeId):
+                return None
+
+        if downLink.type == LinkType.Par:
+            if not self.check_if_link_has_vertex_as_main(downLink, conclusion_id):
+                return None
 
         # remove the two links and the shared vertices
         newGraph = self.copy()
