@@ -21,71 +21,66 @@ class Prover:
 
         lexicalCombinations_with_targettype = list(map(lambda graph_list:add_target_type_graph(
             graph_list, targetType), lexicalCombinations))
-        #
-        # g1 = LoLaGraph()
-        # g2 = LoLaGraph()
-        #
-        # l1 = g1.addNode(NODE_FACTORY.createLinkNode(g1))
-        # l2 = g1.addNode(NODE_FACTORY.createLinkNode(g1))
-        # l2.type = LinkType.Par
-        #
-        # n1 = g1.addNode(NODE_FACTORY.createVertex(g1, "s"))
-        # n2 = g1.addNode(NODE_FACTORY.createVertex(g1, "sos"))
-        # n3 = g1.addNode(NODE_FACTORY.createVertex(g1, "s"))
-        # n4 = g1.addNode(NODE_FACTORY.createVertex(g1, "sosonp"))
-        # n5 = g1.addNode(NODE_FACTORY.createVertex(g1, "np"))
-        #
-        # g1.addEdge(l1, n1)
-        # g1.addEdge(n2, l1)
-        # g1.addEdge(n3, l1)
-        # g1.addEdge(l2, n2)
-        # g1.addEdge(l2, n4)
-        # g1.addEdge(n5, l2)
-        #
-        # l3 = g2.addNode(NODE_FACTORY.createLinkNode(g2))
-        # l4 = g2.addNode(NODE_FACTORY.createLinkNode(g2))
-        # l3.type = LinkType.Par
-        #
-        # n6 = g2.addNode(NODE_FACTORY.createVertex(g2, "s"))
-        # n7 = g2.addNode(NODE_FACTORY.createVertex(g2, "snps"))
-        # n8 = g2.addNode(NODE_FACTORY.createVertex(g2, "nps"))
-        # n9 = g2.addNode(NODE_FACTORY.createVertex(g2, "np"))
-        # n10 = g2.addNode(NODE_FACTORY.createVertex(g2, "s"))
-        #
-        # g2.addEdge(l3, n6)
-        # g2.addEdge(n7, l3)
-        # g2.addEdge(n8, l3)
-        # g2.addEdge(l4, n9)
-        # g2.addEdge(l4, n8)
-        # g2.addEdge(n10, l4)
-        #
-        # lexicalCombinations = [[g1, g2]]
-        # lexicalCombinations_with_targettype = list(map(lambda graph_list:
-        #                                                add_target_type_graph(graph_list, "snps"),
-        #                                                lexicalCombinations)
-        #                                            )
+
         for lexicalCombination in lexicalCombinations_with_targettype:
-            perms = list(itertools.permutations(lexicalCombination))
+            proofStructure = lexicalCombination[0].copy()
+            for i in range(1, len(lexicalCombination)):
+                proofStructure.graph = nx.compose(proofStructure.graph, lexicalCombination[i].copy().graph)
+
+            premDic = {}
+            concDic = {}
+
+            # construct a dictionary of premises and conclusions
+            # key = sequent, value = node
+            for p in proofStructure.getPremises():
+                if p.word:
+                    # if the node is the root of a word module and it is non-simple
+                    if proofStructure.getChildren(p.nodeId):
+                        continue
+                    if p.sequent not in concDic:
+                        concDic[p.sequent] = []
+                    concDic[p.sequent].append(p)
+                    continue
+                if p.sequent not in premDic:
+                    premDic[p.sequent] = []
+                premDic[p.sequent].append(p)
+
+            for c in proofStructure.getConclusions():
+                if c.word:
+                    # if the node is the root of a word module and it is non-simple
+                    if proofStructure.getParents(c.nodeId):
+                        continue
+                    if c.sequent not in premDic:
+                        premDic[c.sequent] = []
+                    premDic[c.sequent].append(p)
+                    continue
+                if c.sequent not in concDic:
+                    concDic[c.sequent] = []
+                concDic[c.sequent].append(c)
+
+
+            connectionMaps = []
+            for seq, _ in premDic.items():
+                if seq in concDic:
+                    connectionMaps.append(list(list(zip(x,concDic[seq])) for x in itertools.permutations(premDic[seq],len(concDic[seq]))))
+
+
 
             graphs = []
-            for perm in perms:
-                accumulatedGraphs = [perm[0]]
-                for i in range(1, len(perm)):
-                    tmpGraphs = []
-                    for aGraph in accumulatedGraphs:
-                        otherGraph = perm[i]
-                        tmpGraphs = tmpGraphs + aGraph.getPossibleConnections(otherGraph)
-                    accumulatedGraphs = tmpGraphs
-                graphs = graphs + accumulatedGraphs
 
-            graphs = [g for g in graphs if len(g.getConclusions()) == 1 and g.getConclusions()[0].sequent == targetType]
-            graphs = [g for g in graphs if g.hasCorrectWordOrder(sentence)]
-            # TODO: remove duplicate graphs and this line below
-            try:
-                graphs = [graphs[0]]
-            except:
-                pass
+            for connectionMap in itertools.product(*connectionMaps):
+                newGraph = proofStructure.connectFeest(list(connectionMap), sentence, targetType)
+                if newGraph:
+                    graphs.append(newGraph)
 
+            for g in graphs:
+                g.draw()
+            #
+            # try:
+            #     graphs = [graphs[0]]
+            # except:
+            #     pass
+            #
             while graphs:
                 graph = graphs.pop()
                 if graph.isTensorTree():
@@ -99,9 +94,8 @@ class Prover:
             # return the proof term
             print("ik ben een derivation")
 
-    def buildGraph(self):
+    def buildGraph(self, ):
         return True
-
 
 def get_types_file_dict():
     types_file = open(TYPES_PATH)

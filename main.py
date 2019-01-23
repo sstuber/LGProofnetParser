@@ -119,11 +119,11 @@ if __name__ == '__main__':
     # rewritings = g4.getPossibleRewritings()
     #
     # print("end test rewrite")
-    print("begin test 'Kids love Super_Mario'")
+    sentence = "games that kids love"
+    print("begin test " + sentence)
     prover = Prover()
-    sentence = "kids love super_mario"
     lexicon = get_types_file_dict()
-    prover.prove(sentence, lexicon, "s")
-    print("end test 'Kids love Super_Mario'")
+    prover.prove(sentence, lexicon, "n")
+    print("end test " + sentence)
 
     print("end main")

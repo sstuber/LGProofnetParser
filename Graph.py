@@ -56,6 +56,26 @@ class LoLaGraph:
         premiseOrder = list(map(lambda x: x.word, self.getOrderedPremises()))
         return sentence.lower() == " ".join(premiseOrder)
 
+    def hasCorrectConclusion(self, conclusion):
+        return len(self.getConclusions()) == 1 and self.getConclusions()[0].sequent == conclusion
+
+    # connect a graph according to the connection map and check if sentence and target type are correct
+    def connectFeest(self, connectionMap, sentence, targetType):
+        newGraph = self.copy()  # graph.copy()
+
+        for connectionType in connectionMap:
+            for connection in connectionType:
+                connection = list(connection)
+                newGraph.updateNodeFeest(connection[0], connection[1])
+
+        try:
+            if newGraph.hasCorrectWordOrder(sentence) and newGraph.hasCorrectConclusion(targetType):
+                return newGraph
+        except:
+            return False
+        return False
+
+
     # return list of new graphs that can be created from connecting with otherGraph
     def getPossibleConnections(self, otherGraph):
 
@@ -145,8 +165,6 @@ class LoLaGraph:
             if connection[0].is_sequent_root:
                 if connection[1] is not None:
                     node = newGraph.getNode(connection[1].nodeId)
-                    if node.nodeId is 3:
-                        print("HOI")
                     node.word = connection[0].word
                     node.is_sequent_root = connection[0].is_sequent_root
                     node.from_target_type = connection[0].from_target_type
@@ -450,15 +468,47 @@ class LoLaGraph:
     def getNode(self, nodeId):
         return self.graph.nodes()[nodeId]['node']
 
+
+    def updateNodeFeest(self, node, otherNode):
+
+        # restore node properties
+        if node.word:
+            otherNode.word = node.word
+            otherNode.is_sequent_root = node.is_sequent_root
+            otherNode.from_target_type = node.from_target_type
+
+        # restore edge properties
+        try:
+            adj = self.graph.adj[node]
+        except:
+            return
+
+        for neighborId, edge in adj.items():
+            parentId = edge['parent']
+            alignment = edge['alignment']
+            main_edge_id = edge['main_edge']
+            if main_edge_id is not None and main_edge_id == node.nodeId:
+                main_edge_id = otherNode.nodeId
+
+            if parentId == node.nodeId:
+                parentId = otherNode.nodeId
+            self.graph.add_edge(otherNode.nodeId, neighborId, parent=parentId, alignment=alignment, main_edge=main_edge_id)
+
+        self.graph.remove_node(node.nodeId)
+
     # Update the nodeId to newId
     def updateNode(self, nodeId, newId):
         # get the node from the graph we wish to update
-        adj = self.graph.adj[nodeId]
         node = self.getNode(nodeId)
-        self.graph.add_node(newId, node=self.getNode(nodeId))
+        newNode = self.graph.add_node(newId, node=self.getNode(nodeId))
+        self.getNode(newId).nodeId = newId
         # remove the node from the graph
         self.graph.remove_node(nodeId)
         # restore the edges
+        try:
+            adj = self.graph.adj[nodeId]
+        except:
+            return
         for neighborId, v in adj.items():
             parentId = v['parent']
             alignment = v['alignment']
@@ -565,7 +615,10 @@ class LoLaGraph:
             node = v['node']
             colors.append(node.getColor(self))
             if type(node) is LoLaVertex:
-                labels[node.nodeId] = str(node.nodeId) + " " + node.sequent
+                if node.word:
+                    labels[node.nodeId] = str(node.nodeId) + " " + node.word
+                else:
+                    labels[node.nodeId] = str(node.nodeId) + " " + node.sequent
             else:
                 labels[node.nodeId] = str(node.nodeId)
 
