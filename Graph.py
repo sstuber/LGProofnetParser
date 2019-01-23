@@ -323,8 +323,7 @@ class LoLaGraph:
         for link in self.getLinks():
             rewriting = self.rewrite(link)
             if rewriting:
-                for r in rewriting:
-                    rewritings.append(r)
+                rewritings.append(rewriting)
 
         return rewritings
 
@@ -337,13 +336,14 @@ class LoLaGraph:
         try:
             # the middle link is binary, pointing down, a tensor and the grandchild of upper link
             middleLink = self.getNode(self.getChildren(self.getChildren(upperLink.nodeId)[0])[0])
-            if middleLink.mode is not LinkMode.Binary or middleLink.shape is not LinkShape.Downward:
+            if middleLink.mode is not LinkMode.Binary or middleLink.getLinkShape(self) is not LinkShape.Downward:
                 return False
             # the lower link is binary, pointing down, a tensor and the grandchild of middle link
             lowerLink = self.getNode(self.getChildren(self.getChildren(middleLink.nodeId)[0])[0])
-            if lowerLink.mode is not LinkMode.Binary or lowerLink.shape is not LinkShape.Downward:
+            if lowerLink.mode is not LinkMode.Binary or lowerLink.getLinkShape(self) is not LinkShape.Downward:
                 return False
-        except:
+        except Exception as e:
+            print(e)
             return False
 
         newGraph = self.copy()
