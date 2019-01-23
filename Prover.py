@@ -91,6 +91,8 @@ class Prover:
             # return the proof term
             print("ik ben een derivation")
 
+        return derivations
+
     def buildGraph(self, ):
         return True
 
