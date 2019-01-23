@@ -64,8 +64,6 @@ class Prover:
                 if seq in concDic:
                     connectionMaps.append(list(list(zip(x,concDic[seq])) for x in itertools.permutations(premDic[seq],len(concDic[seq]))))
 
-
-
             graphs = []
 
             for connectionMap in itertools.product(*connectionMaps):
@@ -73,16 +71,15 @@ class Prover:
                 if newGraph:
                     graphs.append(newGraph)
 
-            for g in graphs:
-                g.draw()
-            #
-            # try:
-            #     graphs = [graphs[0]]
-            # except:
-            #     pass
-            #
+            visitedGraphs = set()
+
             while graphs:
                 graph = graphs.pop()
+
+                if graph in visitedGraphs:
+                    continue
+                visitedGraphs.add(graph)
+
                 if graph.isTensorTree():
                     derivations.append(graph)
                     continue

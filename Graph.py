@@ -12,6 +12,12 @@ class LoLaGraph:
         self.parentGraph = parent_graph
         self.graph = nx.Graph()
 
+    def __eq__(self, other):
+        return nx.is_isomorphic(self.graph, other.graph)
+
+    def __hash__(self):
+        return hash(tuple(sorted(self.graph.degree())))
+
     # returns a fresh graph
     def copy(self):
         newLoLaGraph = LoLaGraph(self.parentGraph)
@@ -343,7 +349,6 @@ class LoLaGraph:
             if lowerLink.mode is not LinkMode.Binary or lowerLink.getLinkShape(self) is not LinkShape.Downward:
                 return False
         except Exception as e:
-            print(e)
             return False
 
         newGraph = self.copy()
@@ -645,12 +650,12 @@ class LoLaGraph:
                 if node.word:
                     labels[node.nodeId] = str(node.nodeId) + " " + node.word
                 else:
-                    labels[node.nodeId] = str(node.nodeId) + " " + node.sequent
+                    labels[node.nodeId] = ""#str(node.nodeId) + " " + node.sequent
             else:
-                labels[node.nodeId] = str(node.nodeId)
+                labels[node.nodeId] = ""# str(node.nodeId)
 
         # draw the graph
-        nx.draw(self.graph, show_labels=True, labels=labels, node_color=colors, node_size=250, font_size=8)
+        nx.draw(self.graph, show_labels=True, labels=labels, node_color=colors, node_size=150, font_size=8)
         plt.show()
 
 def all_combinations(any_list):

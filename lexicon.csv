@@ -4,7 +4,6 @@ games,n
 parents,np
 love,(np\s)/np
 hate,(np\s)/np
-parents,np
 that,(n\n)/(s/(diamond(square(np))))
 but,((s/(diamond(square(np))))\(square(s/np)))/(s/(diamond(square(np))))
 super_mario,np
