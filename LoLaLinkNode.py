@@ -74,6 +74,7 @@ class LoLaVertex:
 
         self.is_sequent_root = False
         self.from_target_type = False
+        self.axiom_link = None
 
         self.word = ""
 

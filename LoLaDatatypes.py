@@ -5,6 +5,9 @@ class AxiomLinkType(Enum):
     Blue = 'Blue'
     Red = 'Red'
 
+class AxiomLinkDirection(Enum):
+    Up = 'up'
+    Down = 'down'
 
 class VertexType(Enum):
     Premise = 'premise'

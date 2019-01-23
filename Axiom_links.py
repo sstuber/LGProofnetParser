@@ -1,5 +1,6 @@
 from SequentParser import ParseSequent, SequentType
-from LoLaDatatypes import AxiomLinkType
+from LoLaDatatypes import AxiomLinkType, AxiomLinkDirection
+from LoLaLinkNode import LoLaVertex
 
 blue_parent_no_tentacle = [(True, SequentType.ForwardSlash), (True, SequentType.BackwardSlash)]
 # main node is current vertex
@@ -18,6 +19,22 @@ red_child_no_tentacle = [(False, SequentType.ForwardSlash), (False, SequentType.
 # main node is current vertex
 red_child_tentacle = [(True, SequentType.ForwardSlash), (True, SequentType.BackwardSlash)]
 
+
+
+def transform_to_axiom_graph(lola_graph, bias_map):
+
+    nx_graph_dict_values = dict(lola_graph.graph.nodes()).values()
+
+    lola_nodes = map(lambda nx_dict: nx_dict['node'], nx_graph_dict_values)
+    lola_vertices = filter(lambda lola_node: type(lola_node) is LoLaVertex , lola_nodes)
+
+    for vertex in lola_vertices:
+        axiom_link_type = get_axiom_link_of_vertex(lola_graph, vertex)
+        vertex_bias = get_polarity_from_sequent(vertex.sequent, bias_map)
+
+        axiom_direction = transform_bias_into_direction(vertex_bias,axiom_link_type)
+
+        vertex.axiom_link = (axiom_link_type, axiom_direction)
 
 
 def get_axiom_link_of_vertex(graph, vertex):
@@ -93,11 +110,26 @@ bias = {
     'n': False
 }
 
+def transform_bias_into_direction(bias, AxiomLink):
+    if AxiomLink is None:
+        return None
+
+    if AxiomLink is AxiomLinkType.Blue:
+        if bias:
+            return AxiomLinkDirection.Up
+        return AxiomLinkDirection.Down
+    # is red
+    if bias:
+        return AxiomLinkDirection.Down
+    return AxiomLinkDirection.Up
+
 
 def get_polarity_from_sequent(sequent, bias_map=bias):
 
-
     sequent_type, string_array = ParseSequent(sequent)
+
+    if sequent_type is SequentType.SingleWord:
+        return bias_map[string_array[0]]
 
     if sequent_type is SequentType.ForwardSlash or sequent_type is SequentType.BackwardSlash:
         return False
@@ -105,8 +137,5 @@ def get_polarity_from_sequent(sequent, bias_map=bias):
     if sequent_type is SequentType.Tensor:
         return True
 
-    if sequent_type is SequentType.Diamond or SequentType.Square:
-        return False
-
-    return bias_map[string_array[0]]
+    return False
 
