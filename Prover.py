@@ -16,6 +16,7 @@ class Prover:
         words = sentence.lower().split()
         sequence_lists = map(lambda x: (lexicon[x], x), words)
         unfolded_graphs = list(map(create_unfolded_graph_list_from_word, sequence_lists))
+
         derivations = []
         lexicalCombinations = list(itertools.product(*unfolded_graphs))
 
@@ -67,6 +68,7 @@ class Prover:
             graphs = []
 
             for connectionMap in itertools.product(*connectionMaps):
+
                 newGraph = proofStructure.connectFeest(list(connectionMap), sentence, targetType)
                 if newGraph:
                     graphs.append(newGraph)

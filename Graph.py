@@ -46,11 +46,14 @@ class LoLaGraph:
                 left = [x for x in adj if adj[x]['alignment'] is EdgeAlignment.Left]
 
                 if right:
-                    stack.append(self.getNode(right[0]))
+                    for ding in right:
+                        stack.append(self.getNode(ding))
                 if straight:
-                    stack.append(self.getNode(straight[0]))
+                    for ding in straight:
+                        stack.append(self.getNode(ding))
                 if left:
-                    stack.append(self.getNode(left[0]))
+                    for ding in left:
+                        stack.append(self.getNode(ding))
 
                 if type(node) is LoLaVertex and node.getVertexType(self) is VertexType.Premise:
                     premises.append(node)
@@ -503,6 +506,9 @@ class LoLaGraph:
 
     def updateNodeFeest(self, node, otherNode):
 
+        if node.nodeId == 27 or otherNode.nodeId == 27:
+            print("feest")
+
         # restore node properties
         if node.word:
             otherNode.word = node.word
@@ -650,7 +656,7 @@ class LoLaGraph:
                 if node.word:
                     labels[node.nodeId] = str(node.nodeId) + " " + node.word
                 else:
-                    labels[node.nodeId] = ""#str(node.nodeId) + " " + node.sequent
+                    labels[node.nodeId] = str(node.nodeId)#""#str(node.nodeId) + " " + node.sequent
             else:
                 labels[node.nodeId] = ""# str(node.nodeId)
 
