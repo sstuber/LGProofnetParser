@@ -239,16 +239,108 @@ def left_backwardlash_term(variable_manager, term_till_now , link_node, lola_gra
 
     return term
 
+def left_tensor_term(variable_manager, term_till_now , link_node, lola_graph):
+    vertex_z = lola_graph.getNode(lola_graph.getParents(link_node.nodeId)[0])
+
+    adj = lola_graph.graph.adj[link_node.nodeId]
+
+    vertex_a = None
+    vertex_b = None
+
+    for k, v in adj.items():
+        if v['edge']:
+            continue
+        if v['alignment'] is EdgeAlignment.Left:
+            vertex_a = lola_graph.getNode(k)
+        if v['alignment'] is EdgeAlignment.Right:
+            vertex_b = lola_graph.getNode(k)
+
+    term = f'( {variable_manager.get_variable_from_node_id(vertex_z.nodeId)}_{variable_manager.get_variable_from_node_id(vertex_a.nodeId)}' \
+           f' {variable_manager.get_variable_from_node_id(vertex_b.nodeId)} )* {term_till_now}'
+
+    return term
+
+
+def right_forwardslash_term(variable_manager, term_till_now , link_node, lola_graph):
+
+    vertex_a = lola_graph.getNode(lola_graph.getChildren(link_node.nodeId)[0])
+    vertex_z = None
+    vertex_b = None
+
+    adj = lola_graph.graph.adj[link_node.nodeId]
+    for k, v in adj.items():
+        if v['main_edge']:
+            vertex_z = lola_graph.getNode( v['main_edge'])
+
+        if k != vertex_a.nodeId:
+            vertex_b = lola_graph.getNode(k)
+
+    term = f'( {variable_manager.get_variable_from_node_id(vertex_z.nodeId)}_{variable_manager.get_variable_from_node_id(vertex_a.nodeId)}' \
+           f' {variable_manager.get_variable_from_node_id(vertex_b.nodeId)} )* {term_till_now}'
+
+    return term
+
+def right_backwardlash_term(variable_manager, term_till_now , link_node, lola_graph):
+
+    vertex_a = lola_graph.getNode(lola_graph.getParents(link_node.nodeId)[0])
+    vertex_z = None
+    vertex_b = None
+
+    adj = lola_graph.graph.adj[link_node.nodeId]
+    for k, v in adj.items():
+        if v['main_edge']:
+            vertex_z = lola_graph.getNode( v['main_edge'])
+
+        if k != vertex_a.nodeId:
+            vertex_b = lola_graph.getNode(k)
+
+    term = f'( {variable_manager.get_variable_from_node_id(vertex_z.nodeId)}_{variable_manager.get_variable_from_node_id(vertex_b.nodeId)}' \
+           f' {variable_manager.get_variable_from_node_id(vertex_a.nodeId)} ) * {term_till_now}'
+
+    return term
+
+def right_tensor_term(variable_manager, term_till_now , link_node, lola_graph):
+    vertex_z = lola_graph.getNode(lola_graph.getChildren(link_node.nodeId)[0])
+
+    adj = lola_graph.graph.adj[link_node.nodeId]
+
+    vertex_a = None
+    vertex_b = None
+
+    for k, v in adj.items():
+        if v['edge']:
+            continue
+        if v['alignment'] is EdgeAlignment.Left:
+            vertex_a = lola_graph.getNode(k)
+        if v['alignment'] is EdgeAlignment.Right:
+            vertex_b = lola_graph.getNode(k)
+
+    term = f'{variable_manager.get_variable_from_node_id(vertex_a.nodeId)} tensor {variable_manager.get_variable_from_node_id(vertex_b.nodeId)} '
+
+    variable_manager.set_variable(vertex_z, term)
+
+    return term
+
+
+def get_term_from_link(variable_manager, term_till_now , link_node, lola_graph):
+
+    linked_function = link_to_term_functions[link_node.get_pre_arrow_tuple]
+
+    term = linked_function(variable_manager, term_till_now , link_node, lola_graph)
+
+    return term
+
+
+
 
 link_to_term_functions = {
-    (True, SequentType.ForwardSlash): '',
-    (True, SequentType.Tensor): '',
-    (True, SequentType.BackwardSlash): '',
-    (False, SequentType.ForwardSlash): '',
-    (False, SequentType.Tensor): '',
-    (False, SequentType.BackwardSlash): '',
+    (True, SequentType.ForwardSlash): left_forwardslash_term,
+    (True, SequentType.Tensor): left_tensor_term,
+    (True, SequentType.BackwardSlash): left_backwardlash_term,
+    (False, SequentType.ForwardSlash): right_forwardslash_term,
+    (False, SequentType.Tensor): right_tensor_term,
+    (False, SequentType.BackwardSlash): right_backwardlash_term,
 }
-
 
 
 
