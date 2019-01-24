@@ -164,7 +164,7 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
             newGraph = lola_graph.copy()
             term_till_now = process_red_axiom_from_vertex(red,variable_manager,term_till_now)
             newGraph.getNode(red).axiom_link = None
-            term_till_now = process_blue_axiom_from_vertex(red,variable_manager,term_till_now, lola_graph)
+            term_till_now = process_blue_axiom_from_vertex(blue,variable_manager,term_till_now, lola_graph)
 
             newGraph.getNode(blue).axiom_link = None
             expanded_subset = expand_subset(newGraph, subset)
