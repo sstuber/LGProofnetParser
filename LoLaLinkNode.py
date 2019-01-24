@@ -100,7 +100,7 @@ class LoLaVertex:
         return self.nodeId == other.nodeId
 
     def __str__(self):
-        return "%i: %s %s" % (self.nodeId, self.sequent)
+        return "%i: %s" % (self.nodeId, self.sequent)
 
     # return the vertex type. Calculate with the graph
     def getVertexType(self, graph):

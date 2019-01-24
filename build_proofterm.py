@@ -82,13 +82,25 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
             for neighbor in neighbors:
                 unvisited.add(neighbor)
 
+    all_link_nodes = lola_graph.getLinks()
+
+    contains_all = True
+    for link_node in all_link_nodes:
+        if link_node in subset:
+            continue
+        contains_all = False
+
     if variable_manager is None:
         variable_manager = VariableManager()
 
-    if len( unvisited) == 1:
-        print(term_till_now)
+    last_loop = False
+    if len( unvisited) == 1 and contains_all:
+        last_loop = True
 
     current = lowest
+
+    has_visited_last = False
+
     while unvisited:
         if type(current) is LoLaVertex:
             if current in visited:
@@ -134,6 +146,19 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
                 if p in unvisited:
                     unvisited.remove(p)
 
+            if last_loop:
+                unvisited = set()
+
+            if has_visited_last:
+                return
+
+            if len( unvisited) == 1:
+                has_visited_last = True
+                # for p in lola_graph.getChildren(prevNode.nodeId):
+                #     visited.add(p)
+                #     if p in unvisited:
+                #         unvisited.remove(p)
+
     red_arrows = []
     blue_arrows = []
 
@@ -144,7 +169,7 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
             vertices_in_subset.append(lola_graph.getNode(neighbor))
 
     for v in vertices_in_subset:
-        if v == lola_graph.getConclusions()[0]:
+        if v == lola_graph.getConclusions()[0] and not last_loop:
             continue
         if v.axiom_link:
             if v.axiom_link[0] is AxiomLinkType.Blue:
@@ -169,6 +194,9 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
             newGraph.getNode(blue).axiom_link = None
             expanded_subset = expand_subset(newGraph, subset)
 
+            if last_loop:
+                print(term_till_now)
+                return
             crawl_axiom_graph(newGraph, expanded_subset, has_been_active, visited, unvisited, blue, variable_manager, term_till_now)
 
 def process_red_axiom_from_vertex(vertex, variable_manager, term_till_now):
@@ -188,7 +216,9 @@ def process_blue_axiom_from_vertex(vertex, variable_manager, term_till_now, lola
     if lola_graph.getConclusions()[0] == vertex:
         mu = 'mu'
 
-    term = f'{mu}{var} . {term_till_now}'
+    term = f'{mu} {var} . {term_till_now}'
+
+    variable_manager.set_variable(vertex.nodeId, term)
 
     return term
 
