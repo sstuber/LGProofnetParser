@@ -34,7 +34,6 @@ def transform_to_axiom_graph(lola_graph, bias_map):
         axiom_direction = transform_bias_into_direction(vertex_bias,axiom_link_type)
         if axiom_link_type is not None:
             vertex.axiom_link = (axiom_link_type, axiom_direction)
-        print(vertex.axiom_link)
 
     return lola_graph
 
@@ -50,11 +49,9 @@ def get_axiom_link_of_vertex(graph, vertex):
         is_main_of_child = check_if_link_has_vertex_as_main(graph, child_link_node, vertex.nodeId)
 
         if child_pre_info in red_child_no_tentacle or (child_pre_info in red_child_tentacle and is_main_of_child):
-            print(' red candidate')
             if vertex.is_sequent_root:
                 return AxiomLinkType.Red
 
-        print('isPremise')
         return None
 
     if len(children_nodes) == 0:
@@ -66,7 +63,6 @@ def get_axiom_link_of_vertex(graph, vertex):
                 parent_pre_info in blue_parent_no_tentacle and is_main_of_parent):
             return AxiomLinkType.Blue
 
-        print('isConclusion')
         return None
 
     parent_link_node = graph.getNode(parent_nodes[0])
@@ -80,12 +76,11 @@ def get_axiom_link_of_vertex(graph, vertex):
     if parent_pre_info in blue_parent_no_tentacle or (parent_pre_info in blue_parent_no_tentacle and is_main_of_parent):
         if child_pre_info in blue_child_no_tentacle or (child_pre_info in blue_child_tentacle and not is_main_of_child):
             # check if child is is candidate
-            print('blue candidate')
             return AxiomLinkType.Blue
 
     if parent_pre_info in red_parent_no_tentacle or (parent_pre_info in red_parent_tentacle and not is_main_of_parent):
         if child_pre_info in red_child_no_tentacle or (child_pre_info in red_child_tentacle and is_main_of_child):
-            print(' red candidate')
+
             return AxiomLinkType.Red
 
     return None
