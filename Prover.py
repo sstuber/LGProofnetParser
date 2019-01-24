@@ -5,6 +5,7 @@ from Graph import *
 import itertools
 import networkx as nx
 from Axiom_links import transform_to_axiom_graph
+from build_proofterm import *
 
 TYPES_PATH = './lexicon.csv'
 
@@ -114,6 +115,11 @@ class Prover:
             transfromed_graph = transform_to_axiom_graph(main_proof_structure,tmp_bias_map)
 
             transfromed_graph.draw()
+
+            subsets = get_subsets(transfromed_graph)
+
+            if len(subsets) >0:
+                crawl_axiom_graph(transfromed_graph, subsets[0])
             # return the proof term
             derivation.draw()
 

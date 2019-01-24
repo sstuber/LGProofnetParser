@@ -88,6 +88,7 @@ class LoLaVertex:
         newLinkVertex.is_sequent_root = self.is_sequent_root
         newLinkVertex.from_target_type = self.from_target_type
         newLinkVertex.word = self.word
+        newLinkVertex.axiom_link = self.axiom_link
         return newLinkVertex
 
     def __hash__(self):

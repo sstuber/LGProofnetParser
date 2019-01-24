@@ -33,29 +33,27 @@ if __name__ == '__main__':
     lexicon = get_types_file_dict()
 
     while True:
-
         print('give sentence')
-        sentence = input('')
+        sentence = 'every teacher likes some student'
 
         print('give target type')
-        targetType = input('')
+        targetType = 's'
 
-        print('give bias for s')
-        bias_s = get_bias_input()
-        print('give bias for n')
-        bias_n = get_bias_input()
-        print('give bias for np')
-        bias_np = get_bias_input()
-
-        bias = {bias_s, bias_n, bias_np}
+        # print('give bias for s')
+        # bias_s = get_bias_input()
+        # print('give bias for n')
+        # bias_n = get_bias_input()
+        # print('give bias for np')
+        # bias_np = get_bias_input()
+        #
+        # bias = {bias_s, bias_n, bias_np}
 
         print("Begin test: " + sentence + " |- " + targetType)
-        try:
-            prover.prove(sentence, lexicon, targetType)
-        except Exception as ex:
-            print(ex)
-            print("Encountered an error, please give new input")
 
+        prover.prove(sentence, lexicon, targetType)
+        print("Encountered an error, please give new input")
+
+        input('')
         print("end test " + sentence)
 
     print("end main")
