@@ -1,6 +1,9 @@
 
 from LoLaLinkNode import LoLaLinkNode, LoLaVertex
 from LoLaDatatypes import *
+
+import copy
+
 from SequentParser import SequentType
 
 def expand_subset(lola_graph, subset):
@@ -64,7 +67,8 @@ def get_lowest_vertex(graph, subnet):
         children = graph.getChildren(child_link_node.nodeId)
 
 
-def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, unvisited=None, lowest=None):
+def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, unvisited=None, lowest=None,variable_manager=None, term_till_now=''):
+
     if lowest is None:
         lowest = get_lowest_vertex(lola_graph, subset)
     if has_been_active is None:
@@ -77,6 +81,12 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
             neighbors = list(lola_graph.graph.adj[link.nodeId])
             for neighbor in neighbors:
                 unvisited.add(neighbor)
+
+    if variable_manager is None:
+        variable_manager = VariableManager()
+
+    if len( unvisited) == 1:
+        print(term_till_now)
 
     current = lowest
     while unvisited:
@@ -109,6 +119,9 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
         else:
             adj = lola_graph.graph.adj[current.nodeId]
             prevNode = current
+
+            term_till_now = get_term_from_link(variable_manager,term_till_now,current.nodeId,lola_graph)
+
             for k, v in adj.items():
                 if v['main_edge']:
                     if k not in visited:
@@ -143,15 +156,41 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
     # -> build corresponding term
     # also remove a blue arrow (can multiple: diverge
 
+
     for red in red_arrows:
         for blue in blue_arrows:
             # TODO build term here
             # remove a combination of red and blue arrows in the subset
             newGraph = lola_graph.copy()
+            term_till_now = process_red_axiom_from_vertex(red,variable_manager,term_till_now)
             newGraph.getNode(red).axiom_link = None
+            term_till_now = process_blue_axiom_from_vertex(red,variable_manager,term_till_now, lola_graph)
+
             newGraph.getNode(blue).axiom_link = None
             expanded_subset = expand_subset(newGraph, subset)
-            crawl_axiom_graph(newGraph, expanded_subset, has_been_active, visited, unvisited, blue)
+
+            crawl_axiom_graph(newGraph, expanded_subset, has_been_active, visited, unvisited, blue, variable_manager, term_till_now)
+
+def process_red_axiom_from_vertex(vertex, variable_manager, term_till_now):
+    if vertex.word:
+        new_var = vertex.word
+    else:
+        new_var = variable_manager.get_new_variable()
+
+    term = f'<{new_var} | {term_till_now}>'
+
+    return term
+
+def process_blue_axiom_from_vertex(vertex, variable_manager, term_till_now, lola_graph):
+    var = variable_manager.get_variable_from_node_id(vertex.nodeId)
+
+    mu = 'mu-dak'
+    if lola_graph.getConclusions()[0] == vertex:
+        mu = 'mu'
+
+    term = f'{mu}{var} . {term_till_now}'
+
+    return term
 
 def check_if_link_has_vertex_with(lola_graph, linknode_id , axiom_link_type):
     adj = lola_graph.graph.adj[linknode_id]
@@ -170,6 +209,7 @@ def check_if_link_has_vertex_with(lola_graph, linknode_id , axiom_link_type):
             if main_edge_id is not None and main_edge_id == linknode_id:
                 return True
     return False
+
 
 
 class VariableManager():
@@ -193,9 +233,26 @@ class VariableManager():
 
         return self.dict[node_id]
 
-
     def set_variable(self, node_id, value):
         self.dict[node_id] = value
+
+    def get_new_variable(self):
+        if self.count< 26:
+            var =self.wordList[self.count]
+        else:
+            var = self.count
+
+        self.count = self.count + 1
+        return var
+
+    def copy(self):
+        self_copy = VariableManager()
+        self_copy.dict = copy.deepcopy(self.dict)
+        self_copy.count = self.count
+
+        return self_copy
+
+
 
 
 def left_forwardslash_term(variable_manager, term_till_now , link_node, lola_graph):
@@ -322,9 +379,10 @@ def right_tensor_term(variable_manager, term_till_now , link_node, lola_graph):
     return term
 
 
-def get_term_from_link(variable_manager, term_till_now , link_node, lola_graph):
+def get_term_from_link(variable_manager, term_till_now , link_node_id, lola_graph):
+    link_node = lola_graph.getNode(link_node_id)
 
-    linked_function = link_to_term_functions[link_node.get_pre_arrow_tuple]
+    linked_function = link_to_term_functions[link_node.get_pre_arrow_tuple()]
 
     term = linked_function(variable_manager, term_till_now , link_node, lola_graph)
 
