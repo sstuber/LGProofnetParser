@@ -118,10 +118,10 @@ class Prover:
 
             subsets = get_subsets(transfromed_graph)
 
-            if len(subsets) >0:
+            if len(subsets) > 0:
                 crawl_axiom_graph(transfromed_graph, subsets[0])
             # return the proof term
-            derivation.draw()
+            # derivation.draw()
 
         return derivations
 

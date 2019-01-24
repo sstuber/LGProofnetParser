@@ -64,25 +64,51 @@ def get_lowest_vertex(graph, subnet):
         children = graph.getChildren(child_link_node.nodeId)
 
 
-def crawl_axiom_graph(lola_graph, subset, visited=None, lowest=None):
+def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, unvisited=None, lowest=None):
     if lowest is None:
         lowest = get_lowest_vertex(lola_graph, subset)
+    if has_been_active is None:
+        has_been_active = set()
     if visited is None:
         visited = set()
+    if unvisited is None:
+        unvisited = set()
+        for link in subset:
+            neighbors = list(lola_graph.graph.adj[link.nodeId])
+            for neighbor in neighbors:
+                unvisited.add(neighbor)
+
     current = lowest
-    while True:
+    while unvisited:
         if type(current) is LoLaVertex:
+            if current in visited:
+                has_been_active.add(current)
             parents = lola_graph.getParents(current.nodeId)
             if parents:
-                parent = parents[0]
+                parent = lola_graph.getNode(parents[0])
                 if parent in subset:
-                    current = lola_graph.getParents(current.nodeId)[0]
+                    current = parent
                 else:
+                    #oh kut er is geen tensor link meer in de subset. Maybe een par link???
+                    pars = [l for l in lola_graph.getLinks() if l.type is LinkType.Par]
+                    for p in pars:
+                        neighbors = dict(lola_graph.graph.adj[p.nodeId]).keys()
+                        # the par is connected to a visited that has not been active
+                        flag = False
+                        for n in neighbors:
+                            if n in visited and n not in has_been_active:
+                                flag = True
+                                break
+                        # if the par is connected to a visited and NOT connected to a has_been_active
+                        # then we can go the par link
+                        if flag:
+                            current = lola_graph.getParents(current.nodeId)[0]
                     break
             else:
                 break
         else:
-            adj = lola_graph.graph.adj[current]
+            adj = lola_graph.graph.adj[current.nodeId]
+            prevNode = current
             for k, v in adj.items():
                 if v['main_edge']:
                     if k not in visited:
@@ -90,8 +116,10 @@ def crawl_axiom_graph(lola_graph, subset, visited=None, lowest=None):
                     else:
                         current = [p for p in lola_graph.getParents(current.nodeId) if p is not v][0]
                     break
-            for p in lola_graph.getParents(current):
+            for p in lola_graph.getParents(prevNode.nodeId):
                 visited.add(p)
+                if p in unvisited:
+                    unvisited.remove(p)
 
     red_arrows = []
     blue_arrows = []
@@ -123,7 +151,7 @@ def crawl_axiom_graph(lola_graph, subset, visited=None, lowest=None):
             newGraph.getNode(red).axiom_link = None
             newGraph.getNode(blue).axiom_link = None
             expanded_subset = expand_subset(newGraph, subset)
-            crawl_axiom_graph(newGraph, expanded_subset, visited, blue)
+            crawl_axiom_graph(newGraph, expanded_subset, has_been_active, visited, unvisited, blue)
 
 def check_if_link_has_vertex_with(lola_graph, linknode_id , axiom_link_type):
     adj = lola_graph.graph.adj[linknode_id]
