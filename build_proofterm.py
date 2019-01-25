@@ -94,7 +94,7 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
         variable_manager = VariableManager()
 
     last_loop = False
-    if len( unvisited) == 1 and contains_all:
+    if len(unvisited) == 1 and contains_all:
         last_loop = True
 
     current = lowest
@@ -135,11 +135,13 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
             term_till_now = get_term_from_link(variable_manager,term_till_now,current.nodeId,lola_graph)
 
             for k, v in adj.items():
-                if v['main_edge']:
+                if v['main_edge'] is not None:
                     if k not in visited:
                         current = lola_graph.getNode(k)
                     else:
-                        current = [p for p in lola_graph.getParents(current.nodeId) if p is not v][0]
+                        # Todo figure out what  needs to be done here
+                        # if the main edge already has been visited then what do we do
+                        current = [lola_graph.getNode(p) for p in lola_graph.getParents(current.nodeId) if p != k][0]
                     break
             for p in lola_graph.getParents(prevNode.nodeId):
                 visited.add(p)
@@ -187,17 +189,19 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
             # TODO build term here
             # remove a combination of red and blue arrows in the subset
             newGraph = lola_graph.copy()
-            term_till_now = process_red_axiom_from_vertex(red,variable_manager,term_till_now)
-            newGraph.getNode(red).axiom_link = None
-            term_till_now = process_blue_axiom_from_vertex(blue,variable_manager,term_till_now, lola_graph)
-
-            newGraph.getNode(blue).axiom_link = None
-            expanded_subset = expand_subset(newGraph, subset)
             copied_variable_manager = variable_manager.copy()
+            copied_term_till_now = term_till_now
+
+            copied_term_till_now = process_red_axiom_from_vertex(red,copied_variable_manager,copied_term_till_now)
+            newGraph.getNode(red).axiom_link = None
+            copied_term_till_now = process_blue_axiom_from_vertex(blue,copied_variable_manager,copied_term_till_now, lola_graph)
+            newGraph.getNode(blue).axiom_link = None
+
+            expanded_subset = expand_subset(newGraph, subset)
             if last_loop:
-                print(term_till_now)
+                print(copied_term_till_now)
                 return
-            crawl_axiom_graph(newGraph, expanded_subset, has_been_active, visited, unvisited, blue, copied_variable_manager, term_till_now)
+            crawl_axiom_graph(newGraph, expanded_subset, has_been_active, visited, unvisited, blue, copied_variable_manager, copied_term_till_now)
 
 def process_red_axiom_from_vertex(vertex, variable_manager, term_till_now):
     if vertex.word:
@@ -210,7 +214,7 @@ def process_red_axiom_from_vertex(vertex, variable_manager, term_till_now):
     return term
 
 def process_blue_axiom_from_vertex(vertex, variable_manager, term_till_now, lola_graph):
-    var = variable_manager.get_variable_from_node_id(vertex.nodeId)
+    var = variable_manager.get_variable_from_node(vertex)
 
     mu = 'mu-dak'
     if lola_graph.getConclusions()[0] == vertex:
@@ -250,7 +254,10 @@ class VariableManager():
 
         self.wordList = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 
-    def get_variable_from_node_id(self,node_id):
+    def get_variable_from_node(self, vertex):
+
+        node_id = vertex.nodeId
+
         if node_id in self.dict:
             return self.dict[node_id]
 
@@ -293,15 +300,16 @@ def left_forwardslash_term(variable_manager, term_till_now , link_node, lola_gra
 
     adj = lola_graph.graph.adj[link_node.nodeId]
     for k, v in adj.items():
-        if v['main_edge']:
+        if v['main_edge'] is not None:
             vertex_z = lola_graph.getNode( v['main_edge'])
+            continue
 
         if k != vertex_a.nodeId:
             vertex_b = lola_graph.getNode(k)
 
-    term = f'( {variable_manager.get_variable_from_node_id(vertex_a.nodeId)} / {variable_manager.get_variable_from_node_id(vertex_b.nodeId)} )'
+    term = f'( {variable_manager.get_variable_from_node(vertex_a)} / {variable_manager.get_variable_from_node(vertex_b)} )'
 
-    variable_manager.set_variable(vertex_z, term)
+    variable_manager.set_variable(vertex_z.nodeId, term)
 
     return term
 
@@ -314,15 +322,16 @@ def left_backwardlash_term(variable_manager, term_till_now , link_node, lola_gra
 
     adj = lola_graph.graph.adj[link_node.nodeId]
     for k, v in adj.items():
-        if v['main_edge']:
+        if v['main_edge'] is not None:
             vertex_z = lola_graph.getNode( v['main_edge'])
+            continue
 
         if k != vertex_a.nodeId:
             vertex_b = lola_graph.getNode(k)
 
-    term = f'( {variable_manager.get_variable_from_node_id(vertex_b.nodeId)} \ {variable_manager.get_variable_from_node_id(vertex_a.nodeId)} )'
+    term = f'( {variable_manager.get_variable_from_node(vertex_b)} \ {variable_manager.get_variable_from_node(vertex_a)} )'
 
-    variable_manager.set_variable(vertex_z, term)
+    variable_manager.set_variable(vertex_z.nodeId, term)
 
     return term
 
@@ -335,15 +344,15 @@ def left_tensor_term(variable_manager, term_till_now , link_node, lola_graph):
     vertex_b = None
 
     for k, v in adj.items():
-        if v['edge']:
+        if v['main_edge'] is not None:
             continue
         if v['alignment'] is EdgeAlignment.Left:
             vertex_a = lola_graph.getNode(k)
         if v['alignment'] is EdgeAlignment.Right:
             vertex_b = lola_graph.getNode(k)
 
-    term = f'( {variable_manager.get_variable_from_node_id(vertex_z.nodeId)}_{variable_manager.get_variable_from_node_id(vertex_a.nodeId)}' \
-           f' {variable_manager.get_variable_from_node_id(vertex_b.nodeId)} )* {term_till_now}'
+    term = f'( {variable_manager.get_variable_from_node(vertex_z)}_{variable_manager.get_variable_from_node(vertex_a)}' \
+           f' {variable_manager.get_variable_from_node(vertex_b)} )* {term_till_now}'
 
     return term
 
@@ -356,14 +365,15 @@ def right_forwardslash_term(variable_manager, term_till_now , link_node, lola_gr
 
     adj = lola_graph.graph.adj[link_node.nodeId]
     for k, v in adj.items():
-        if v['main_edge']:
-            vertex_z = lola_graph.getNode( v['main_edge'])
+        if v['main_edge'] is not None:
+            vertex_z = lola_graph.getNode(v['main_edge'])
+            continue
 
         if k != vertex_a.nodeId:
             vertex_b = lola_graph.getNode(k)
 
-    term = f'( {variable_manager.get_variable_from_node_id(vertex_z.nodeId)}_{variable_manager.get_variable_from_node_id(vertex_a.nodeId)}' \
-           f' {variable_manager.get_variable_from_node_id(vertex_b.nodeId)} )* {term_till_now}'
+    term = f'( {variable_manager.get_variable_from_node(vertex_z)}_{variable_manager.get_variable_from_node(vertex_a)}' \
+           f' {variable_manager.get_variable_from_node(vertex_b)} )* {term_till_now}'
 
     return term
 
@@ -375,14 +385,15 @@ def right_backwardlash_term(variable_manager, term_till_now , link_node, lola_gr
 
     adj = lola_graph.graph.adj[link_node.nodeId]
     for k, v in adj.items():
-        if v['main_edge']:
+        if v['main_edge'] is not None:
             vertex_z = lola_graph.getNode( v['main_edge'])
+            continue
 
         if k != vertex_a.nodeId:
             vertex_b = lola_graph.getNode(k)
 
-    term = f'( {variable_manager.get_variable_from_node_id(vertex_z.nodeId)}_{variable_manager.get_variable_from_node_id(vertex_b.nodeId)}' \
-           f' {variable_manager.get_variable_from_node_id(vertex_a.nodeId)} ) * {term_till_now}'
+    term = f'( {variable_manager.get_variable_from_node(vertex_z)}_{variable_manager.get_variable_from_node(vertex_b)}' \
+           f' {variable_manager.get_variable_from_node(vertex_a)} ) * {term_till_now}'
 
     return term
 
@@ -395,16 +406,16 @@ def right_tensor_term(variable_manager, term_till_now , link_node, lola_graph):
     vertex_b = None
 
     for k, v in adj.items():
-        if v['edge']:
+        if v['main_edge'] is not None:
             continue
         if v['alignment'] is EdgeAlignment.Left:
             vertex_a = lola_graph.getNode(k)
         if v['alignment'] is EdgeAlignment.Right:
             vertex_b = lola_graph.getNode(k)
 
-    term = f'{variable_manager.get_variable_from_node_id(vertex_a.nodeId)} tensor {variable_manager.get_variable_from_node_id(vertex_b.nodeId)} '
+    term = f'{variable_manager.get_variable_from_node(vertex_a)} tensor {variable_manager.get_variable_from_node(vertex_b)} '
 
-    variable_manager.set_variable(vertex_z, term)
+    variable_manager.set_variable(vertex_z.nodeId, term)
 
     return term
 
@@ -419,7 +430,7 @@ def get_term_from_link(variable_manager, term_till_now , link_node_id, lola_grap
     return term
 
 
-def noop(variable_manager, term_till_now , link_node_id, lola_graph):
+def noop(variable_manager, term_till_now, link_node_id, lola_graph):
     return term_till_now
 
 link_to_term_functions = {
