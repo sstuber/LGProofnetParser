@@ -193,11 +193,11 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
 
             newGraph.getNode(blue).axiom_link = None
             expanded_subset = expand_subset(newGraph, subset)
-
+            copied_variable_manager = variable_manager.copy()
             if last_loop:
                 print(term_till_now)
                 return
-            crawl_axiom_graph(newGraph, expanded_subset, has_been_active, visited, unvisited, blue, variable_manager, term_till_now)
+            crawl_axiom_graph(newGraph, expanded_subset, has_been_active, visited, unvisited, blue, copied_variable_manager, term_till_now)
 
 def process_red_axiom_from_vertex(vertex, variable_manager, term_till_now):
     if vertex.word:
@@ -419,7 +419,8 @@ def get_term_from_link(variable_manager, term_till_now , link_node_id, lola_grap
     return term
 
 
-
+def noop(variable_manager, term_till_now , link_node_id, lola_graph):
+    return term_till_now
 
 link_to_term_functions = {
     (True, SequentType.ForwardSlash): left_forwardslash_term,
@@ -428,6 +429,10 @@ link_to_term_functions = {
     (False, SequentType.ForwardSlash): right_forwardslash_term,
     (False, SequentType.Tensor): right_tensor_term,
     (False, SequentType.BackwardSlash): right_backwardlash_term,
+    (True, SequentType.Diamond): noop,
+    (True, SequentType.Square): noop,
+    (False, SequentType.Diamond): noop,
+    (False, SequentType.Square): noop
 }
 
 

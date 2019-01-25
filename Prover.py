@@ -25,8 +25,11 @@ class Prover:
         lexicalCombinations_with_targettype = list(map(lambda graph_list:add_target_type_graph(
             graph_list, targetType), lexicalCombinations))
 
+        z = 0
         for lexicalCombination in lexicalCombinations_with_targettype:
+            z = z + 1
             print("Start connecting graphs")
+            print("Trying lexical combination: " + str(z) + "/" + str(len(lexicalCombinations_with_targettype)))
             proofStructure = lexicalCombination[0].copy()
             for i in range(1, len(lexicalCombination)):
                 proofStructure.graph = nx.compose(proofStructure.graph, lexicalCombination[i].copy().graph)
