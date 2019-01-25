@@ -67,7 +67,10 @@ def get_lowest_vertex(graph, subnet):
         children = graph.getChildren(child_link_node.nodeId)
 
 
-def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, unvisited=None, lowest=None,variable_manager=None, term_till_now=''):
+def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, unvisited=None, lowest=None,variable_manager=None, term_till_now='', allowed_par_node_ids=None):
+
+    if allowed_par_node_ids is None:
+        allowed_par_node_ids = []
 
     if lowest is None:
         lowest = get_lowest_vertex(lola_graph, subset)
@@ -124,8 +127,23 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
                         # if the par is connected to a visited and NOT connected to a has_been_active
                         # then we can go the par link
                         if flag:
-                            current = lola_graph.getParents(current.nodeId)[0]
-                    break
+
+                            # TODO important
+                            # when a par node is allowed it needs to be added to the subnet
+                            # All its neighbours needs to be added to unvisited
+                            # with the next subset the legal par nodes need to be included in making the set
+                            current = lola_graph.getNode(lola_graph.getParents(current.nodeId)[0])
+                            allowed_par_node_ids.append(current.nodeId)
+                            unvisited.add(current.nodeId)
+
+                            # add the neighbours of the legal par node to the unvisited set
+                            neighbors = dict(lola_graph.graph.adj[current.nodeId]).keys()
+                            for n in neighbors:
+                                if n not in visited:
+                                    unvisited.add(n)
+
+                            has_visited_last = False
+                        break
             else:
                 break
         else:
@@ -169,6 +187,9 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
         neighbors = list(lola_graph.graph.adj[link.nodeId])
         for neighbor in neighbors:
             vertices_in_subset.append(lola_graph.getNode(neighbor))
+
+    if len(subset) + len(allowed_par_node_ids) == len(all_link_nodes):
+        contains_all = True
 
     for v in vertices_in_subset:
         if v == lola_graph.getConclusions()[0] and not contains_all and not last_loop:
