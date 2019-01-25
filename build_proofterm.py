@@ -171,7 +171,7 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
             vertices_in_subset.append(lola_graph.getNode(neighbor))
 
     for v in vertices_in_subset:
-        if v == lola_graph.getConclusions()[0] and not last_loop:
+        if v == lola_graph.getConclusions()[0] and not contains_all and not last_loop:
             continue
         if v.axiom_link:
             if v.axiom_link[0] is AxiomLinkType.Blue:
@@ -198,9 +198,9 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
             newGraph.getNode(blue).axiom_link = None
 
             expanded_subset = expand_subset(newGraph, subset)
-            if last_loop:
+            if contains_all or last_loop:
                 print(copied_term_till_now)
-                return
+                return copied_term_till_now
             crawl_axiom_graph(newGraph, expanded_subset, has_been_active, visited, unvisited, blue, copied_variable_manager, copied_term_till_now)
 
 def process_red_axiom_from_vertex(vertex, variable_manager, term_till_now):
@@ -260,6 +260,10 @@ class VariableManager():
 
         if node_id in self.dict:
             return self.dict[node_id]
+
+        if len(vertex.word) > 0:
+            self.dict[node_id] = vertex.word
+            return vertex.word
 
         if self.count< 26:
             self.dict[node_id] = self.wordList[self.count]
