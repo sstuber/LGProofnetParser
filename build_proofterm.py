@@ -1,4 +1,3 @@
-
 from LoLaLinkNode import LoLaLinkNode, LoLaVertex
 from LoLaDatatypes import *
 
@@ -6,10 +5,12 @@ import copy
 
 from SequentParser import SequentType
 
+# after removing axiom links, return the expanded subset
 def expand_subset(lola_graph, subset):
     subsets = get_subsets(lola_graph)
     return [s for s in subsets if subset[0] in s][0]
 
+# find all subsets in a graph with axiom links
 def get_subsets(lola_graph):
     discovered = set()
     subnets = []
@@ -32,35 +33,38 @@ def get_subsets(lola_graph):
                 for neighbor in neighbors:
                     if len(current_subnet) > 0 and (type(lola_node) is LoLaVertex and lola_node.axiom_link is not None):
                         continue
-                    poep = lola_graph.getNode(neighbor)
-                    if type(poep) is LoLaLinkNode and poep.type is LinkType.Par:
+                    nextNode = lola_graph.getNode(neighbor)
+                    if type(nextNode) is LoLaLinkNode and nextNode.type is LinkType.Par:
                         continue
-                    stack.append(poep)
+                    stack.append(nextNode)
         subnets.append(current_subnet)
         if links_left:
             stack.append(list(links_left)[0])
 
     return subnets
 
+# get the vertex that is 'lowest' or deepest in the graph (i.e. has longest ancestral chain)
 def get_lowest_vertex(graph, subnet):
+    # just grab a random node from the graph
     lowest = subnet[0]
 
-    # subset heeft alleen maar tensor dus altijd children
+    # subnet only has tensors, so there must be children
     children = graph.getChildren(lowest.nodeId)
 
+    # keep going deeper while we can
     while len(children) > 0:
 
         vertex = children[0]
 
         vertex_children = graph.getChildren(vertex)
 
-        # als vertex leaf is dan is conclusie van graph
+        # if there are no children, we cannot go deeper
         if len(vertex_children) == 0:
             return graph.getNode(vertex)
 
-        child_link_node =  graph.getNode(vertex_children[0])
+        child_link_node = graph.getNode(vertex_children[0])
 
-        # als child link node niet in subset dan return the tussen vertex
+        # if the link node is not in our current subnet, get the vertex combining that link to this subnet
         if child_link_node not in subnet:
             return graph.getNode(vertex)
 
