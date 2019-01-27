@@ -1,36 +1,23 @@
 from LoLaDatatypes import VertexType, LinkType, LinkShape, LinkMode
 from SequentParser import ParseSequent
-# TODO: Fix circular dependency between lolalinknode and unfold_vertex_functions
 
-
-# type of function
-
-
-# todo Use and fill values
+# tensor/par link in the graph
 class LoLaLinkNode:
 
     def __init__(self, nodeId, graph):
-
         self.nodeId: int = nodeId
-
         self.type: LinkType = LinkType.Tensor
-
-        # type of function
         self.mode: LinkMode = LinkMode.Binary
-
         self.left: bool = True
-
         self.sequent_type = None
-
-        # vertex that combines the other nodes (main vertex)
         self.main: LoLaVertex = None
-
         self.graph = graph
 
+    # helper function for unfolding graph
     def get_pre_arrow_tuple(self):
         return self.left, self.sequent_type
 
-    # return a copy of a link node
+    # return a fresh deep copy of a link node
     def copy(self, newGraph):
         newLolaLinkNode = LoLaLinkNode(self.nodeId, newGraph)
         newLolaLinkNode.type = self.type
@@ -39,49 +26,48 @@ class LoLaLinkNode:
         newLolaLinkNode.sequent_type = self.sequent_type
         return newLolaLinkNode
 
+    # return whether the link faces up or down i.e. /\ or \/
     def getLinkShape(self, graph):
         if len(graph.getParents(self.nodeId)) == 2:
             return LinkShape.Downward
         return LinkShape.Upward
 
+    # return the set of vertices shared between two links
     def getSharedVertices(self, otherLink, graph):
         return list(set(graph.getNeighbors(self.nodeId)).intersection(
             set(graph.getNeighbors(otherLink.nodeId))
         ))
 
+    # hash the link with its node id
     def __hash__(self):
         return hash(self.nodeId)
 
+    # compare two links using their node id
     def __eq__(self, other):
         if type(other) == int:
             return self.nodeId == other
         return self.nodeId == other.nodeId
 
+    # give a color for drawing in networkX (tensor = green, par = pink)
     def getColor(self, graph):
         if self.type == LinkType.Tensor:
             return 'xkcd:light green'
         return 'xkcd:dark pink'
 
-
+# vertex in the graph
 class LoLaVertex:
 
     def __init__(self, nodeId, graph, sequent):
-
         self.nodeId: int = nodeId
         self.sequent: str = sequent
-
         self.is_unfolded: bool = False
-
         self.is_sequent_root = False
         self.from_target_type = False
         self.axiom_link = None
-
         self.word = ""
-
-        # lola graph
         self.graph = graph
 
-    # return a copy of this node
+    # return a fresh deep copy of this node
     def copy(self, newGraph):
         newLinkVertex = LoLaVertex(self.nodeId, newGraph, self.sequent)
         newLinkVertex.is_unfolded = self.is_unfolded
@@ -91,24 +77,27 @@ class LoLaVertex:
         newLinkVertex.axiom_link = self.axiom_link
         return newLinkVertex
 
+    # hash the vertex with its node id
     def __hash__(self):
         return hash(self.nodeId)
 
+    # compare two vertices using their node id
     def __eq__(self, other):
         if type(other) == int:
             return self.nodeId == other
         return self.nodeId == other.nodeId
 
+    # pretty print a node
     def __str__(self):
         return "%i: %s" % (self.nodeId, self.sequent)
 
+    # return the set of links shared between two vertices (max 1)
     def getSharedLinks(self, otherVertex, graph):
         return list(set(graph.getNeighbors(self.nodeId)).intersection(
             set(graph.getNeighbors(otherVertex.nodeId))
         ))
 
-
-    # return the vertex type. Calculate with the graph
+    # return the vertex type (premise, conclusion, notALeaf)
     def getVertexType(self, graph):
         parents = graph.getParents(self.nodeId)
         children = graph.getChildren(self.nodeId)
@@ -124,16 +113,7 @@ class LoLaVertex:
             return VertexType.Conclusion
         return VertexType.NotALeaf
 
-    # return whether two vertices can connect
-    def canConnect(self, otherVertex, graph, otherGraph) -> bool:
-        self_vertex_type = self.getVertexType(graph)
-        other_vertex_type = otherVertex.getVertexType(otherGraph)
-
-        return self.sequent == otherVertex.sequent and \
-               ((self_vertex_type == VertexType.Premise and other_vertex_type == VertexType.Conclusion) \
-                or (self_vertex_type == VertexType.Conclusion and other_vertex_type == VertexType.Premise))
-
-     # returns a graph that unfolded from
+     # unfold the vertex and return the resulting graph
     def unfoldVertex(self, graph, unfold_function, new_graph):
 
         sequent_type, string_array = ParseSequent(self.sequent)
@@ -146,6 +126,7 @@ class LoLaVertex:
 
         return changed_graph
 
+    # give a color for drawing in networkX (premise = orange, conclusion = blue, notALeaf = mauve)
     def getColor(self, graph):
         if self.getVertexType(graph) is VertexType.Premise:
             return 'xkcd:orange'
