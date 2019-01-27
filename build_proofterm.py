@@ -116,6 +116,8 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
                     current = parent
                 else:
                     #oh kut er is geen tensor link meer in de subset. Maybe een par link???
+
+
                     pars = [l for l in lola_graph.getLinks() if l.type is LinkType.Par]
                     for p in pars:
                         neighbors = dict(lola_graph.graph.adj[p.nodeId]).keys()
@@ -187,11 +189,13 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
     # -> build corresponding term
     # also remove a blue arrow (can multiple: diverge
 
-
     for red in red_arrows:
         for blue in blue_arrows:
-            # TODO build term here
             # remove a combination of red and blue arrows in the subset
+
+            if not can_remove_link(red,lola_graph,subset) or not can_remove_link(blue,lola_graph,subset):
+                continue
+
             newGraph = lola_graph.copy()
             copied_variable_manager = variable_manager.copy()
             copied_term_till_now = term_till_now
@@ -206,6 +210,37 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
                 print(copied_term_till_now)
                 return copied_term_till_now
             crawl_axiom_graph(newGraph, expanded_subset, has_been_active, visited, unvisited, blue, copied_variable_manager, copied_term_till_now)
+
+
+def can_remove_link(vertex, lola_graph, subnet):
+    parents_ids = lola_graph.getParents(vertex.nodeId)
+    children_ids = lola_graph.getChildren(vertex.nodeId)
+
+    if len(parents_ids) == 0:
+        if vertex.axiom_link[1] is AxiomLinkDirection.Up:
+            return True
+        return False
+
+    if len(children_ids) == 0:
+        if vertex.axiom_link[1] is AxiomLinkDirection.Down:
+            return True
+        return False
+
+    parent_link = lola_graph.getNode(parents_ids[0])
+    child_link = lola_graph.getNode(children_ids[0])
+
+    if parent_link in subnet:
+        if vertex.axiom_link[1] is AxiomLinkDirection.Down:
+            return True
+        return False
+
+    if child_link in subnet:
+        if vertex.axiom_link[1] is AxiomLinkDirection.Up:
+            return True
+        return False
+
+    return False
+
 
 def process_red_axiom_from_vertex(vertex, variable_manager, term_till_now):
     if vertex.word:

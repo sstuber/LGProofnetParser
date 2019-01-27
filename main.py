@@ -34,11 +34,17 @@ if __name__ == '__main__':
         # bias_np = get_bias_input()
         #
         # bias = {bias_s, bias_n, bias_np}
+        tmp_bias_map = {
+            's': False,
+            'np': False,
+            'n': True
+        }
 
         print("Begin test: " + sentence + " |- " + targetType)
-
-        prover.prove(sentence, lexicon, targetType)
-        print("Encountered an error, please give new input")
-
+        # try:
+        prover.prove(sentence, lexicon, targetType, tmp_bias_map)
         input('')
+        # except:
+        #     print("Encountered an error, please give new input")
+
         print("end test " + sentence)

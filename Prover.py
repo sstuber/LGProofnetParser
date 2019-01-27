@@ -17,7 +17,7 @@ class Prover:
     def __init__(self):
         print("init prover")
 
-    def prove(self, sentence, lexicon, targetType):
+    def prove(self, sentence, lexicon, targetType, bias_map):
         # all words in the sentence
         words = sentence.lower().split()
         # matching sequents to the words according to the lexicon
@@ -148,13 +148,8 @@ class Prover:
         for derivation in derivations:
 
             main_proof_structure = derivation.get_deep_parent()
-            tmp_bias_map = {
-                's': False,
-                'np': True,
-                'n': True
-            }
 
-            transformed_graph = transform_to_axiom_graph(main_proof_structure,tmp_bias_map)
+            transformed_graph = transform_to_axiom_graph(main_proof_structure, bias_map)
 
             transformed_graph.draw()
 
@@ -162,6 +157,7 @@ class Prover:
 
             if len(subsets) > 0:
                 print(crawl_axiom_graph(transformed_graph, subsets[0]))
+
         return derivations
 
 
