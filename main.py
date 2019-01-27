@@ -1,11 +1,7 @@
-import networkx as nx
-import LoLaLinkNode
-import matplotlib.pyplot as plt
 from Prover import *
-from NodeFactory import *
-from Graph import *
 
 
+# handle the user input when requesting polarities
 def get_bias_input():
     pos_input = set(['p','+','true','t','y'])
     neg_input = set(['n','-','false','f'])
@@ -18,15 +14,6 @@ def get_bias_input():
     return get_bias_input()
 
 
-MATCH_REGEX = r'(\w+|\(.+\))(\/|\\)(\(.+\)|\w+)|(\w+)'
-function_dict = {
-    '/': 'right',
-    '\\': 'left',
-    None: 'singleton'
-}
-
-upgraded_regex = r'(diamond)?(square)?(\w+|\(.+\))(\/|\\)(diamond)?(square)?(\(.+\)|\w+)|(diamond)?(square)?(\w+)'
-#(diamond)?(square)?(\w+|\(.+\))(\/|\\)(diamond)?(square)?(\(.+\)|\w+)|(diamond)?(square)?(\w+)
 if __name__ == '__main__':
 
     prover = Prover()
@@ -55,7 +42,3 @@ if __name__ == '__main__':
 
         input('')
         print("end test " + sentence)
-
-    print("end main")
-
-

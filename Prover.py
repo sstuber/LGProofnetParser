@@ -1,4 +1,3 @@
-from LoLaLinkNode import *
 from functools import reduce
 import re
 from Graph import *
@@ -10,38 +9,47 @@ from build_proofterm import *
 TYPES_PATH = './lexicon.csv'
 
 
+# the prover looks whether derivations can be found given
+# an input sequence, polarities and a target type
+# this is done by means of a proof net
+# the output is a proof term for each derivation
 class Prover:
     def __init__(self):
         print("init prover")
 
     def prove(self, sentence, lexicon, targetType):
+        # all words in the sentence
         words = sentence.lower().split()
+        # matching sequents to the words according to the lexicon
         sequence_lists = map(lambda x: (lexicon[x], x), words)
+        # create word modules from the sequents by unfolding them
         unfolded_graphs = list(map(create_unfolded_graph_list_from_word, sequence_lists))
-
+        # storage for all derivations the prover may find
         derivations = []
+        # An ordered list of sequents for each possible combination (one word might have multiple sequents)
         lexicalCombinations = list(itertools.product(*unfolded_graphs))
-
+        # An ordered list of sequents for each possible combination, combined with the target type
         lexicalCombinations_with_targettype = list(map(lambda graph_list:add_target_type_graph(
             graph_list, targetType), lexicalCombinations))
 
-        z = 0
-        for lexicalCombination in lexicalCombinations_with_targettype:
-            z = z + 1
+        # for each lexical combination, look for a derivation
+        for j in range(len(lexicalCombinations_with_targettype)):
+            lexicalCombination = lexicalCombinations_with_targettype[j]
             print("Start connecting graphs")
-            print("Trying lexical combination: " + str(z) + "/" + str(len(lexicalCombinations_with_targettype)))
+            print("Trying lexical combination: " + str(j + 1) + "/" + str(len(lexicalCombinations_with_targettype)))
+
+            # combine all the word modules into one connected proof net
             proofStructure = lexicalCombination[0].copy()
             for i in range(1, len(lexicalCombination)):
                 proofStructure.graph = nx.compose(proofStructure.graph, lexicalCombination[i].copy().graph)
 
+            # construct a dictionary of premises and conclusions
+            # key = sequent, value = node
             premDic = {}
             concDic = {}
 
-            # construct a dictionary of premises and conclusions
-            # key = sequent, value = node
             for p in proofStructure.getPremises():
                 if p.word:
-                    # if the node is the root of a word module and it is non-simple
                     if proofStructure.getChildren(p.nodeId):
                         continue
                     if p.sequent not in concDic:
@@ -54,7 +62,6 @@ class Prover:
 
             for c in proofStructure.getConclusions():
                 if c.word:
-                    # if the node is the root of a word module and it is non-simple
                     if proofStructure.getParents(c.nodeId):
                         continue
                     if c.sequent not in premDic:
@@ -65,14 +72,14 @@ class Prover:
                     concDic[c.sequent] = []
                 concDic[c.sequent].append(c)
 
-
+            # generate all combinations of <premise - conclusion> connections that have the same sequent
             connectionMaps = []
             for seq, _ in premDic.items():
                 if seq in concDic:
                     connectionMaps.append(list(list(zip(x,concDic[seq])) for x in itertools.permutations(premDic[seq],len(concDic[seq]))))
 
+            # generate all graphs according to the connection map and store those that are valid
             graphs = []
-
             for connectionMap in itertools.product(*connectionMaps):
                 newGraph = proofStructure.connectFeest(list(connectionMap), sentence, targetType)
                 if newGraph:
@@ -82,37 +89,22 @@ class Prover:
             print("finished connecting graphs")
             print("start contracting and rewriting graphs")
 
-            # for i in range(len(graphs)):
-            #     print("Trying graph " + str(i + 1) + "/" + str(len(graphs)))
-            #     graph = graphs[i]
-            #     testGraphs = [graph]
-            #     visitedGraphs = set()
-            #
-            #     while testGraphs:
-            #         testGraph = testGraphs.pop()
-            #
-            #         if testGraph in visitedGraphs:
-            #             continue
-            #
-            #         visitedGraphs.add(testGraph)
-            #
-            #         if testGraph.isTensorTree():
-            #             derivations.append(testGraph)
-            #             print("Derivation found")
-            #             break
-            #
-            #         testGraphs = testGraphs + testGraph.getPossibleContractions()
-            #         testGraphs = testGraphs + testGraph.getPossibleRewritings()
-
+            # attempt to rewrite each graph into a tensor tree (if tensor tree, then derivation is valid)
             for i in range(len(graphs)):
                 print("Trying graph " + str(i + 1) + "/" + str(len(graphs)))
                 graph = graphs[i]
                 testGraphs = [graph]
                 visitedGraphs = set()
 
+                # while we still have graphs that might turn into a derivation
+                # 1. apply binary contractions and structural rewrites until stuck
+                # 2. apply unary contractions
+                # 3. repeat 1-2 until no more graphs or derivation found
+                # this order is chosen because unary contractions yield divergence
                 while testGraphs:
                     testGraph = testGraphs.pop()
 
+                    # if the isomorphism of the current graph is already evaluated, disregard it
                     if testGraph in visitedGraphs:
                         continue
 
@@ -138,21 +130,21 @@ class Prover:
                             if rewriting:
                                 testGraph = rewriting
 
+                        # if the graph did not change, we cannot apply more binary contractions / structural rewrites
                         updated = prevGraph != testGraph
 
+                    # Check if we are done at this point
                     if testGraph.isTensorTree():
                         derivations.append(testGraph)
                         print("Derivation found")
                         break
 
-                    # apply a unary contraction if possible
+                    # generate the unary contractions and restart the loop
                     testGraphs = testGraphs + testGraph.getPossibleUnaryContractions()
-                    # then apply unary contractions
-                    #testGraphs = testGraphs = testGraph.getPossibleUnaryContractions
-
 
         print("finished contracting and rewriting graphs")
 
+        # for each derivation, find a proof term
         for derivation in derivations:
 
             main_proof_structure = derivation.get_deep_parent()
@@ -162,22 +154,18 @@ class Prover:
                 'n': True
             }
 
-            transfromed_graph = transform_to_axiom_graph(main_proof_structure,tmp_bias_map)
+            transformed_graph = transform_to_axiom_graph(main_proof_structure,tmp_bias_map)
 
-            transfromed_graph.draw()
+            transformed_graph.draw()
 
-            subsets = get_subsets(transfromed_graph)
+            subsets = get_subsets(transformed_graph)
 
             if len(subsets) > 0:
-                print (crawl_axiom_graph(transfromed_graph, subsets[0]))
-            # return the proof term
-            # derivation.draw()
-
+                print(crawl_axiom_graph(transformed_graph, subsets[0]))
         return derivations
 
-    def buildGraph(self, ):
-        return True
 
+# read the lexicon and make the information usable
 def get_types_file_dict():
     types_file = open(TYPES_PATH)
 
@@ -201,6 +189,7 @@ def get_types_file_dict():
     return final_dict
 
 
+# helper function for lexicon loader
 def add_word_to_dict(types_dict, word_sequence_list):
     word_name = word_sequence_list[0]
     word_sequence = word_sequence_list[1]
@@ -212,6 +201,7 @@ def add_word_to_dict(types_dict, word_sequence_list):
     return types_dict
 
 
+# generate a word module from a word in a sentence using the lexicon
 def create_unfolded_graph_list_from_word(sequence_list_tuple):
     graph_list = []
 
@@ -231,6 +221,7 @@ def create_unfolded_graph_list_from_word(sequence_list_tuple):
     return graph_list
 
 
+# add the unfolded target type module of the sentence to the proof structure
 def add_target_type_graph(graph_list, targettype):
     graph = LoLaGraph()
 
