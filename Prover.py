@@ -118,12 +118,15 @@ class Prover:
                         for vertex in testGraph.getVertices():
                             if vertex.getVertexType(testGraph) == VertexType.Conclusion:
                                 continue
-                            upperLink = testGraph.getNode(testGraph.getChildren(vertex.nodeId)[0])
-                            if upperLink.mode is LinkMode.Binary:
-                                contraction = testGraph.contractBinary(vertex, upperLink)
-                                if contraction:
-                                    testGraph = contraction
-                                    break
+                            try:
+                                upperLink = testGraph.getNode(testGraph.getChildren(vertex.nodeId)[0])
+                                if upperLink.mode is LinkMode.Binary:
+                                    contraction = testGraph.contractBinary(vertex, upperLink)
+                                    if contraction:
+                                        testGraph = contraction
+                                        break
+                            except:
+                                break
                         # apply a structural rewrite if possible
                         for link in testGraph.getLinks():
                             rewriting = testGraph.rewrite(link)
@@ -144,6 +147,8 @@ class Prover:
 
         print("finished contracting and rewriting graphs")
 
+        derivation_terms = []
+
         # for each derivation, find a proof term
         for derivation in derivations:
 
@@ -155,10 +160,16 @@ class Prover:
 
             subsets = get_subsets(transformed_graph)
 
-            if len(subsets) > 0:
-                print(crawl_axiom_graph(transformed_graph, subsets[0]))
+            all_terms = []
 
-        return derivations
+            for subset in subsets:
+                term_list = crawl_axiom_graph(transformed_graph, subset)
+                print(all_terms)
+                all_terms = all_terms + term_list
+
+            derivation_terms.append((main_proof_structure.copy(), all_terms))
+
+        return derivation_terms
 
 
 # read the lexicon and make the information usable

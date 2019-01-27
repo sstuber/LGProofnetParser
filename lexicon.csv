@@ -17,6 +17,5 @@ super_mario,np
 test,np/(s\(square(np)))
 bob,np
 all,(s/(np\s))/n
-some,((s/np)\s)/n
 square,diamond(square(np))
 leukwoord,(s/(np\s))\s

@@ -21,10 +21,10 @@ if __name__ == '__main__':
 
     while True:
         print('give sentence')
-        sentence = 'games that kids love but parents hate'
+        sentence = 'every teacher likes some student'
 
         print('give target type')
-        targetType = 'n'
+        targetType = 's'
 
         # print('give bias for s')
         # bias_s = get_bias_input()
@@ -36,7 +36,7 @@ if __name__ == '__main__':
         # bias = {bias_s, bias_n, bias_np}
         tmp_bias_map = {
             's': False,
-            'np': False,
+            'np': True,
             'n': True
         }
 

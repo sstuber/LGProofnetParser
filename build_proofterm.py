@@ -117,7 +117,6 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
                 else:
                     #oh kut er is geen tensor link meer in de subset. Maybe een par link???
 
-
                     pars = [l for l in lola_graph.getLinks() if l.type is LinkType.Par]
                     for p in pars:
                         neighbors = dict(lola_graph.graph.adj[p.nodeId]).keys()
@@ -189,6 +188,8 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
     # -> build corresponding term
     # also remove a blue arrow (can multiple: diverge
 
+    total_terms = []
+
     for red in red_arrows:
         for blue in blue_arrows:
             # remove a combination of red and blue arrows in the subset
@@ -207,10 +208,11 @@ def crawl_axiom_graph(lola_graph, subset, has_been_active=None, visited=None, un
 
             expanded_subset = expand_subset(newGraph, subset)
             if contains_all or last_loop:
-                print(copied_term_till_now)
-                return copied_term_till_now
-            crawl_axiom_graph(newGraph, expanded_subset, has_been_active, visited, unvisited, blue, copied_variable_manager, copied_term_till_now)
+                total_terms.append(copied_term_till_now)
+                continue
+            total_terms = total_terms + crawl_axiom_graph(newGraph, expanded_subset, has_been_active, visited, unvisited, blue, copied_variable_manager, copied_term_till_now)
 
+    return total_terms
 
 def can_remove_link(vertex, lola_graph, subnet):
     parents_ids = lola_graph.getParents(vertex.nodeId)
