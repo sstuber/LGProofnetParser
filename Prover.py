@@ -82,6 +82,28 @@ class Prover:
             print("finished connecting graphs")
             print("start contracting and rewriting graphs")
 
+            # for i in range(len(graphs)):
+            #     print("Trying graph " + str(i + 1) + "/" + str(len(graphs)))
+            #     graph = graphs[i]
+            #     testGraphs = [graph]
+            #     visitedGraphs = set()
+            #
+            #     while testGraphs:
+            #         testGraph = testGraphs.pop()
+            #
+            #         if testGraph in visitedGraphs:
+            #             continue
+            #
+            #         visitedGraphs.add(testGraph)
+            #
+            #         if testGraph.isTensorTree():
+            #             derivations.append(testGraph)
+            #             print("Derivation found")
+            #             break
+            #
+            #         testGraphs = testGraphs + testGraph.getPossibleContractions()
+            #         testGraphs = testGraphs + testGraph.getPossibleRewritings()
+
             for i in range(len(graphs)):
                 print("Trying graph " + str(i + 1) + "/" + str(len(graphs)))
                 graph = graphs[i]
@@ -96,13 +118,38 @@ class Prover:
 
                     visitedGraphs.add(testGraph)
 
+                    # first do binary contractions and structural rewritings until stuck
+                    updated = True
+                    while updated:
+                        prevGraph = testGraph
+                        # apply a binary contraction if possible
+                        for vertex in testGraph.getVertices():
+                            if vertex.getVertexType(testGraph) == VertexType.Conclusion:
+                                continue
+                            upperLink = testGraph.getNode(testGraph.getChildren(vertex.nodeId)[0])
+                            if upperLink.mode is LinkMode.Binary:
+                                contraction = testGraph.contractBinary(vertex, upperLink)
+                                if contraction:
+                                    testGraph = contraction
+                                    break
+                        # apply a structural rewrite if possible
+                        for link in testGraph.getLinks():
+                            rewriting = testGraph.rewrite(link)
+                            if rewriting:
+                                testGraph = rewriting
+
+                        updated = prevGraph != testGraph
+
                     if testGraph.isTensorTree():
                         derivations.append(testGraph)
                         print("Derivation found")
                         break
 
-                    testGraphs = testGraphs + testGraph.getPossibleContractions()
-                    testGraphs = testGraphs + testGraph.getPossibleRewritings()
+                    # apply a unary contraction if possible
+                    testGraphs = testGraphs + testGraph.getPossibleUnaryContractions()
+                    # then apply unary contractions
+                    #testGraphs = testGraphs = testGraph.getPossibleUnaryContractions
+
 
         print("finished contracting and rewriting graphs")
 

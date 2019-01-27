@@ -102,6 +102,12 @@ class LoLaVertex:
     def __str__(self):
         return "%i: %s" % (self.nodeId, self.sequent)
 
+    def getSharedLinks(self, otherVertex, graph):
+        return list(set(graph.getNeighbors(self.nodeId)).intersection(
+            set(graph.getNeighbors(otherVertex.nodeId))
+        ))
+
+
     # return the vertex type. Calculate with the graph
     def getVertexType(self, graph):
         parents = graph.getParents(self.nodeId)

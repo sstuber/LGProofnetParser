@@ -34,10 +34,10 @@ if __name__ == '__main__':
 
     while True:
         print('give sentence')
-        sentence = 'every teacher likes some student'
+        sentence = 'games that kids love but parents hate'
 
         print('give target type')
-        targetType = 's'
+        targetType = 'n'
 
         # print('give bias for s')
         # bias_s = get_bias_input()

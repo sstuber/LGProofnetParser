@@ -82,6 +82,14 @@ class LoLaGraph:
 
         for connectionType in connectionMap:
             for connection in connectionType:
+                n0 = self.getNode(connection[0])
+                n1 = self.getNode(connection[1])
+                # simple word modules may not connect to each other
+                if n0.word and n1.word:
+                    return False
+                # vertices with the same link may not connect
+                if n0.getSharedLinks(n1, self):
+                    return False
                 connection = list(connection)
                 newGraph.updateNodeFeest(connection[0], connection[1])
 
@@ -198,6 +206,20 @@ class LoLaGraph:
 
         return contractions
 
+    def getPossibleUnaryContractions(self):
+        contractions = []
+        for vertex in self.getVertices():
+            if vertex.getVertexType(self) == VertexType.Conclusion:
+                continue
+            upperLink = self.getNode(self.getChildren(vertex.nodeId)[0])
+            if upperLink.mode is LinkMode.Unary:
+                contraction = self.contractUnary(vertex, upperLink)
+                if contraction:
+                    contractions.append(contraction)
+
+        return contractions
+
+
     def contract(self, vertex):
         # first assert the H vertex is not a conclusion
         if vertex.getVertexType(self) == VertexType.Conclusion:
@@ -208,6 +230,7 @@ class LoLaGraph:
             return self.contractBinary(vertex, upperLink)
         else:
             return self.contractUnary(vertex, upperLink)
+
 
     def check_if_link_has_vertex_as_main(self, linknode, vertex_id):
         adj = self.graph.adj[linknode.nodeId]
@@ -346,6 +369,10 @@ class LoLaGraph:
 
         return rewritings
 
+    def getPossibleUnaryContractiosn(self):
+        contractions = []
+        for vertex in self.getVertices():
+            contraction = self.contractUnary(vertex, )
 
     def rewrite(self, upperLink):
         # the upper link is unary and a tensor

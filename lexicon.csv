@@ -10,7 +10,6 @@ teacher,n
 student,n
 some,np/n
 likes,(np\s)/np
-love,np\(s/np)
 hate,(np\s)/np
 that,(n\n)/(s/(diamond(square(np))))
 but,((s/(diamond(square(np))))\(square(s/np)))/(s/(diamond(square(np))))
