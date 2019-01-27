@@ -81,7 +81,7 @@ class Prover:
             # generate all graphs according to the connection map and store those that are valid
             graphs = []
             for connectionMap in itertools.product(*connectionMaps):
-                newGraph = proofStructure.connectFeest(list(connectionMap), sentence, targetType)
+                newGraph = proofStructure.connect(list(connectionMap), sentence, targetType)
                 if newGraph:
                     graphs.append(newGraph)
 
