@@ -159,7 +159,6 @@ def LambekProver(sentence, lexicon, targetType, bias_map):
 
         for subset in subsets:
             term_list = crawl_axiom_graph(transformed_graph, subset)
-            print(all_terms)
             all_terms = all_terms + term_list
 
         derivation_terms.append((main_proof_structure.copy(), all_terms))
