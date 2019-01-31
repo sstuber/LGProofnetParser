@@ -153,8 +153,6 @@ def LambekProver(sentence, lexicon, targetType, bias_map):
 
         transformed_graph = transform_to_axiom_graph(main_proof_structure, bias_map)
 
-        transformed_graph.draw()
-
         subsets = get_subsets(transformed_graph)
 
         all_terms = []
