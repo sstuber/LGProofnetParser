@@ -16,15 +16,15 @@ def get_bias_input():
 
 if __name__ == '__main__':
 
-    prover = Prover()
+
     lexicon = get_types_file_dict()
 
     while True:
         print('give sentence')
-        sentence = 'every teacher likes some student'
+        sentence = ''
 
         print('give target type')
-        targetType = 's'
+        targetType = '(s/np)\\s'
 
         # print('give bias for s')
         # bias_s = get_bias_input()
@@ -34,15 +34,15 @@ if __name__ == '__main__':
         # bias_np = get_bias_input()
         #
         # bias = {bias_s, bias_n, bias_np}
+
         tmp_bias_map = {
             's': False,
             'np': True,
             'n': True
         }
-
         print("Begin test: " + sentence + " |- " + targetType)
         # try:
-        prover.prove(sentence, lexicon, targetType, tmp_bias_map)
+        LambekProver(sentence, lexicon, targetType, tmp_bias_map)
         input('')
         # except:
         #     print("Encountered an error, please give new input")
